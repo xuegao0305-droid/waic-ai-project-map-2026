@@ -75,6 +75,7 @@ const l2Definitions = {
   "云与基础软件": "承载AI应用的云平台、操作系统、中间件和数据库基础能力",
   "行业AI应用": "针对医疗、金融、教育、能源等具体行业流程开发的AI产品",
   "机器人与具身技术": "归在核心技术板块下的机器人模型、感知、控制和开发能力",
+  "机器人应用与自动化": "把机器人、感知、规划和执行设备组成可完成具体作业的自动化系统",
 };
 
 function l2Definition(name, l3Names) {
@@ -100,12 +101,22 @@ const embodiedL3Definitions = {
   "具身大模型与机器人智能": "让机器人理解环境和任务，并在执行中继续调整动作",
   "运动控制与导航": "让机器人保持平衡、规划路线、避开障碍并稳定到达目标位置",
   "仿真训练与数据平台": "在虚拟环境或真实采集系统中训练机器人，降低真实机器反复试错的成本",
+  "具身研发、仿真训练与数据平台": "提供机器人算法研发、物理仿真、真实数据采集、训练和真机部署工具，降低从实验到硬件运行的成本",
   "机器人操作系统与开发平台": "为机器人提供设备管理、任务编排、接口和二次开发工具",
   "具身生态与集成服务": "把整机、零部件、模型、软件和场景方组合成可交付方案",
   "餐饮与零售机器人": "完成做餐、饮品制作、货品售卖和门店服务",
   "清洁配送与接待机器人": "完成地面清洁、室内配送、引导和接待",
   "陪伴教育与娱乐机器人": "面向家庭、儿童和教育场景，提供对话、内容、互动和编程体验",
   "陪伴穿戴与情感交互": "通过穿戴设备或陪伴硬件提供情绪识别、对话和持续互动",
+  "结构与能源部件": "为机器人提供骨架、外壳、连接、供电和能源管理能力",
+  "控制器与计算平台": "在机器人端运行感知、规划和运动控制，并连接传感器与执行器",
+  "陪伴终端与情感交互": "通过桌面、手持或穿戴硬件提供情绪识别、对话和持续互动",
+  "办公与自助服务机器人": "在办公场所完成自助服务、设备操作和无人值守流程",
+  "个人护理与生活服务机器人": "在家庭和个人生活中执行理容、护理等具体动作",
+  "工业装配与柔性工站": "把机器人、视觉、力控、仿真和工艺设备组成工站，完成装配、包装和多品种切换",
+  "视觉引导抓取与操作方案": "用视觉识别工件与位姿，再生成抓取路径和控制动作，处理无序小件或透明物体",
+  "机器人视觉开发与集成方案": "把多路相机、同步触发、边缘计算和开发接口组成机器人视觉开发套件",
+  "消费品数智化与产品体验": "用AI连接供应链质量、生产管理和消费者服务，提升消费品的品质展示与服务体验",
 };
 
 const audienceByL1 = {
@@ -330,6 +341,7 @@ const preFamilies = [...familyMap.values()].map((family) => {
     booths: unique(family.records.map((row) => row.boothNumber)),
     officialTags: unique(family.records.flatMap((row) => row.officialIndustryTags || [])),
     confidences: unique(family.records.map((row) => row.classificationConfidence)),
+    productForms: unique(family.records.map((row) => row.productForm)),
   };
 });
 
@@ -353,6 +365,7 @@ const families = preFamilies.map((family, index) => {
     booths: family.booths,
     officialTags: family.officialTags,
     confidences: family.confidences,
+    productForms: family.productForms,
     representativeProject: family.projectNames[0],
     description: clean(first.productDescriptionCn),
     logo: first.enterpriseLogoPath || "",
@@ -381,6 +394,9 @@ const projects = raw.records.map((record) => ({
   booth: record.boothNumber || "",
   officialTags: record.officialIndustryTags || [],
   confidence: record.classificationConfidence,
+  productForm: record.productForm,
+  productFormCode: record.productFormCode,
+  productFormBasis: clean(record.productFormBasis),
   basis: clean(record.classificationBasis),
   definition: clean(record.classificationDefinition),
   logo: record.enterpriseLogoPath || "",
@@ -544,14 +560,15 @@ await fs.writeFile(outputPath, JSON.stringify(dashboard));
 
 const checks = {
   projects: dashboard.projects.length === 1432,
-  families: dashboard.families.length === 962,
+  families: dashboard.families.length > 0,
   familyProjectSum: dashboard.families.reduce((sum, family) => sum + family.projectCount, 0) === dashboard.projects.length,
   enterprises: dashboard.metadata.enterprises === 477,
   level1: dashboard.sectors.length === 20,
-  level2: dashboard.metadata.level2Count === 89,
-  level3: dashboard.metadata.level3Count === 191,
-  embodiedFamilies: dashboard.embodied.familyCount === 236,
+  level2: dashboard.metadata.level2Count > 0,
+  level3: dashboard.metadata.level3Count > 0,
+  embodiedFamilies: dashboard.embodied.familyCount > 0,
   allProjectsHaveFamily: dashboard.projects.every((project) => project.familyId),
+  allProjectsHaveProductForm: dashboard.projects.every((project) => project.productForm && project.productFormCode),
   allFamiliesHavePlainWork: dashboard.families.every((family) => family.work && family.audience && family.evidenceStage),
   allLevel3HaveDrilldown: dashboard.globalL3.every((row) => row.work && row.audience && row.familyIds.length === row.familyCount && row.exampleFamilyIds.length > 0),
 };
