@@ -11,6 +11,7 @@
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "data": "node scripts/build-dashboard-data.mjs",
     "standalone": "node scripts/build-standalone.mjs",
+    "pages:build": "WAIC_STANDALONE_OUTPUT=docs/index.html node scripts/build-standalone.mjs",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"

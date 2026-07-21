@@ -7,7 +7,10 @@ const projectRoot = path.resolve(here, "..");
 const workspaceRoot = path.resolve(projectRoot, "../..");
 const data = JSON.parse(await fs.readFile(path.join(projectRoot, "public/data/waic-dashboard.json"), "utf8"));
 const css = (await fs.readFile(path.join(projectRoot, "app/globals.css"), "utf8")).replace('@import "tailwindcss";', "");
-const output = path.join(workspaceRoot, "outputs/019f8290-6d5c-70f1-b237-6bb4e0e451e5/WAIC_2026_具体趋势拆解_可交互版.html");
+const defaultOutput = path.join(workspaceRoot, "outputs/019f8290-6d5c-70f1-b237-6bb4e0e451e5/WAIC_2026_具体趋势拆解_可交互版.html");
+const output = process.env.WAIC_STANDALONE_OUTPUT
+  ? path.resolve(projectRoot, process.env.WAIC_STANDALONE_OUTPUT)
+  : defaultOutput;
 
 const safeData = JSON.stringify(data).replaceAll("<", "\\u003c");
 
