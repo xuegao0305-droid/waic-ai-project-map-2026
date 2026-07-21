@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { BarChart3, Boxes, Building2, Database, GitBranch, Search, Sparkles, Target, TrendingUp, Users, Workflow } from "lucide-react";
 
 type Project = {
   code: string;
@@ -133,10 +134,10 @@ type DetailState =
   | null;
 
 const navItems: { id: PageId; label: string; note: string }[] = [
-  { id: "overview", label: "全量判断", note: "先比较全部20个行业" },
-  { id: "drilldown", label: "逐层拆解", note: "每个行业用同一套字段" },
-  { id: "projects", label: "全部项目", note: "搜索、筛选和查看原文" },
-  { id: "method", label: "统计说明", note: "去重、热度和公司标准" },
+  { id: "overview", label: "行业全景", note: "比较全部20个行业" },
+  { id: "drilldown", label: "行业拆解", note: "看到具体产品和任务" },
+  { id: "projects", label: "项目查询", note: "搜索和筛选全部展品" },
+  { id: "method", label: "数据说明", note: "范围、单位和阅读方法" },
 ];
 
 const formatNumber = (value: number) => new Intl.NumberFormat("zh-CN").format(value);
@@ -204,7 +205,7 @@ export default function Home() {
         <div className="side-note">
           <span>完整数据范围</span>
           <b>{formatNumber(data.metadata.uniqueProjects)}个WAIC项目</b>
-          <small>全部保留。页面把同一家公司在同一三级方向下的重复展品合并成962组产品。</small>
+          <small>全部保留。同一家公司在同一具体方向下的重复展品合并为{formatNumber(data.metadata.productFamilies)}个产品系列。</small>
         </div>
       </aside>
       <button aria-label="关闭目录" className={`page-shade ${mobileNav ? "open" : ""}`} onClick={() => setMobileNav(false)} />
@@ -226,6 +227,100 @@ function PageIntro({ kicker, title, text }: { kicker: string; title: string; tex
   return <header className="page-intro"><span>{kicker}</span><h1>{title}</h1><p>{text}</p></header>;
 }
 
+function SectorBubbleChart({ data, go }: { data: DashboardData; go: (page: PageId, sector?: string) => void }) {
+  const width = 1040;
+  const height = 520;
+  const margin = { top: 38, right: 44, bottom: 62, left: 76 };
+  const maxX = Math.max(...data.sectors.map((row) => row.enterpriseCount));
+  const maxY = Math.max(...data.sectors.map((row) => row.familyCount));
+  const maxProject = Math.max(...data.sectors.map((row) => row.projectCount));
+  const x = (value: number) => margin.left + (value / maxX) * (width - margin.left - margin.right);
+  const y = (value: number) => height - margin.bottom - (value / maxY) * (height - margin.top - margin.bottom);
+  const r = (value: number) => 8 + Math.sqrt(value / maxProject) * 23;
+  const xTicks = [0, .25, .5, .75, 1].map((value) => Math.round(value * maxX));
+  const yTicks = [0, .25, .5, .75, 1].map((value) => Math.round(value * maxY));
+  const labelNames = new Set(data.sectors.slice(0, 3).map((row) => row.name));
+  return <div className="chart-wrap bubble-chart-wrap">
+    <div className="chart-heading"><BarChart3 aria-hidden="true" /><div><h2>核心技术和具身智能同时拥有更多企业与产品系列</h2><p>越靠右参展企业越多，越靠上产品系列越多，圆越大代表原始展品越多。</p></div></div>
+    <svg className="bubble-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="bubble-title bubble-desc">
+      <title id="bubble-title">WAIC二十个一级行业热度气泡图</title>
+      <desc id="bubble-desc">横轴为参展企业数，纵轴为产品系列数，气泡大小为原始展品数。</desc>
+      {yTicks.map((tick) => <g key={`y-${tick}`}><line x1={margin.left} x2={width - margin.right} y1={y(tick)} y2={y(tick)} className="chart-grid" /><text x={margin.left - 16} y={y(tick) + 5} textAnchor="end" className="chart-tick">{tick}</text></g>)}
+      {xTicks.map((tick) => <g key={`x-${tick}`}><line x1={x(tick)} x2={x(tick)} y1={margin.top} y2={height - margin.bottom} className="chart-grid" /><text x={x(tick)} y={height - margin.bottom + 28} textAnchor="middle" className="chart-tick">{tick}</text></g>)}
+      <text x={(margin.left + width - margin.right) / 2} y={height - 10} textAnchor="middle" className="chart-axis">参展企业数</text>
+      <text transform={`translate(20 ${(margin.top + height - margin.bottom) / 2}) rotate(-90)`} textAnchor="middle" className="chart-axis">产品系列数</text>
+      {data.sectors.map((sector) => <a key={sector.name} href="#drilldown" onClick={(event) => { event.preventDefault(); go("drilldown", sector.name); }} aria-label={`${sector.name}，${sector.enterpriseCount}家企业，${sector.familyCount}个产品系列，${sector.projectCount}件展品`}>
+        <circle cx={x(sector.enterpriseCount)} cy={y(sector.familyCount)} r={r(sector.projectCount)} className={sector.rank <= 3 ? "bubble bubble-primary" : "bubble"}><title>{sector.name}：{sector.enterpriseCount}家企业，{sector.familyCount}个产品系列，{sector.projectCount}件展品</title></circle>
+        {labelNames.has(sector.name) && <text x={x(sector.enterpriseCount)} y={sector.rank === 1 ? y(sector.familyCount) + 5 : y(sector.familyCount) - r(sector.projectCount) - 9} textAnchor="middle" className="bubble-label">{sector.name}</text>}
+      </a>)}
+    </svg>
+  </div>;
+}
+
+type SankeyNode = { name: string; value: number; y: number; h: number; parent?: string };
+
+function SectorSankey({ sector }: { sector: Sector }) {
+  const width = 1120;
+  const height = 560;
+  const topL2 = [...sector.l2].sort((a, b) => b.familyCount - a.familyCount).slice(0, 6);
+  const otherL2Value = sector.l2.slice(6).reduce((sum, row) => sum + row.familyCount, 0);
+  const l2Rows = [...topL2.map((row) => ({ name: row.name, value: row.familyCount, source: row })), ...(otherL2Value ? [{ name: "其他方向", value: otherL2Value, source: null }] : [])];
+  const leaves = l2Rows.flatMap((row) => {
+    if (!row.source) return [{ name: "其他具体产品", value: row.value, parent: row.name }];
+    const top = [...row.source.l3].sort((a, b) => b.familyCount - a.familyCount).slice(0, 2);
+    const other = row.value - top.reduce((sum, item) => sum + item.familyCount, 0);
+    return [...top.map((item) => ({ name: item.name, value: item.familyCount, parent: row.name })), ...(other > 0 ? [{ name: "其他产品", value: other, parent: row.name }] : [])];
+  });
+  const scale = Math.min(1.18, (height - 86 - (leaves.length - 1) * 8) / sector.familyCount);
+  const place = <T extends { name: string; value: number }>(rows: T[], gap: number) => {
+    const totalH = rows.reduce((sum, row) => sum + row.value * scale, 0) + Math.max(0, rows.length - 1) * gap;
+    let cursor = (height - totalH) / 2;
+    return rows.map((row) => { const node = { ...row, y: cursor, h: row.value * scale }; cursor += node.h + gap; return node; });
+  };
+  const l2Nodes = place(l2Rows, 14) as SankeyNode[];
+  const leafNodes = place(leaves, 8) as SankeyNode[];
+  const rootH = sector.familyCount * scale;
+  const rootY = (height - rootH) / 2;
+  let rootOffset = rootY;
+  const l1Links = l2Nodes.map((node) => { const sourceY = rootOffset + node.h / 2; rootOffset += node.h; return { node, sourceY }; });
+  const leafByParent = new Map<string, SankeyNode[]>();
+  leafNodes.forEach((node) => leafByParent.set(node.parent!, [...(leafByParent.get(node.parent!) || []), node]));
+  const l2Links = l2Nodes.flatMap((node) => {
+    let offset = node.y;
+    return (leafByParent.get(node.name) || []).map((leaf) => { const sourceY = offset + leaf.h / 2; offset += leaf.h; return { node, leaf, sourceY }; });
+  });
+  const curve = (x1: number, y1: number, x2: number, y2: number) => `M${x1},${y1} C${x1 + 125},${y1} ${x2 - 125},${y2} ${x2},${y2}`;
+  return <div className="chart-wrap sankey-wrap">
+    <div className="chart-heading"><Workflow aria-hidden="true" /><div><h2>{sector.name}的产品从大板块继续拆到具体方向</h2><p>连线越宽，代表该方向包含的产品系列越多。</p></div></div>
+    <svg className="sankey-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="sankey-title sankey-desc">
+      <title id="sankey-title">{sector.name}产品结构桑基图</title><desc id="sankey-desc">从{sector.name}流向主要二级方向，再流向各方向中数量最多的具体产品。</desc>
+      {l1Links.map(({ node, sourceY }) => <path key={`l1-${node.name}`} d={curve(126, sourceY, 410, node.y + node.h / 2)} strokeWidth={Math.max(2, node.h)} className="sankey-link sankey-link-primary"><title>{sector.name}到{node.name}：{node.value}个产品系列</title></path>)}
+      {l2Links.map(({ node, leaf, sourceY }, index) => <path key={`l2-${index}`} d={curve(436, sourceY, 782, leaf.y + leaf.h / 2)} strokeWidth={Math.max(2, leaf.h)} className="sankey-link"><title>{node.name}到{leaf.name}：{leaf.value}个产品系列</title></path>)}
+      <rect x="96" y={rootY} width="30" height={Math.max(4, rootH)} rx="5" className="sankey-node root-node" />
+      <text x="82" y={rootY + rootH / 2 - 5} textAnchor="end" className="sankey-name">{sector.name}</text><text x="82" y={rootY + rootH / 2 + 14} textAnchor="end" className="sankey-value">{sector.familyCount}个</text>
+      {l2Nodes.map((node) => <g key={node.name}><rect x="410" y={node.y} width="26" height={Math.max(4, node.h)} rx="4" className="sankey-node" /><text x="398" y={node.y + node.h / 2 - 4} textAnchor="end" className="sankey-name">{node.name}</text><text x="398" y={node.y + node.h / 2 + 14} textAnchor="end" className="sankey-value">{node.value}个</text></g>)}
+      {leafNodes.map((node, index) => <g key={`${node.parent}-${node.name}-${index}`}><rect x="782" y={node.y} width="22" height={Math.max(4, node.h)} rx="4" className="sankey-node leaf-node" /><text x="818" y={node.y + node.h / 2 + 5} className="sankey-name">{node.name} · {node.value}</text></g>)}
+      <text x="111" y="28" textAnchor="middle" className="sankey-column">一级行业</text><text x="423" y="28" textAnchor="middle" className="sankey-column">二级方向</text><text x="793" y="28" textAnchor="middle" className="sankey-column">具体产品</text>
+    </svg>
+  </div>;
+}
+
+function ProgressChart({ data, sector }: { data: DashboardData; sector: Sector }) {
+  const stageMap: Record<string, string> = { "规模使用线索": "规模应用", "客户交付线索": "客户交付", "试点验证线索": "试点验证", "研发教学线索": "研发教学", "产品说明": "产品发布" };
+  const counts = new Map<string, number>();
+  data.families.filter((row) => row.l1 === sector.name).forEach((row) => { const name = stageMap[row.evidenceStage] || row.evidenceStage; counts.set(name, (counts.get(name) || 0) + 1); });
+  const order = ["规模应用", "客户交付", "试点验证", "研发教学", "产品发布"];
+  const rows = order.map((name) => ({ name, value: counts.get(name) || 0 })).filter((row) => row.value > 0);
+  const top = [...rows].sort((a, b) => b.value - a.value)[0];
+  return <div className="chart-wrap progress-wrap">
+    <div className="chart-heading"><TrendingUp aria-hidden="true" /><div><h2>{top?.name}是{sector.name}项目介绍中最多的进展阶段</h2><p>按产品系列汇总WAIC目录中出现的应用、交付、试点、研发和发布信息。</p></div></div>
+    <div className="progress-bar" role="img" aria-label={`${sector.name}各进展阶段产品系列数量：${rows.map((row) => `${row.name}${row.value}个`).join("，")}`}>
+      {rows.map((row, index) => <span key={row.name} className={`stage-${index + 1}`} style={{ width: `${row.value / sector.familyCount * 100}%` }}><b>{row.value}</b></span>)}
+    </div>
+    <div className="progress-legend">{rows.map((row, index) => <div key={row.name}><i className={`stage-${index + 1}`} /><span>{row.name}</span><b>{row.value}个</b></div>)}</div>
+  </div>;
+}
+
 function OverviewPage({ data, openDetail, go }: { data: DashboardData; openDetail: (state: DetailState) => void; go: (page: PageId, sector?: string) => void }) {
   const topL2 = data.sectors.flatMap((sector) => sector.l2).sort((a, b) => b.familyCount - a.familyCount || b.projectCount - a.projectCount).slice(0, 8);
   const topL3 = data.globalL3.slice(0, 15);
@@ -236,30 +331,32 @@ function OverviewPage({ data, openDetail, go }: { data: DashboardData; openDetai
 
   return (
     <>
-      <PageIntro kicker="先做全量比较" title="WAIC最集中的项目是AI底座和机器人，具体热点要继续看到三级方向" text="本页先比较全部20个一级行业、89个二级方向和191个三级方向。用户举出的例子只作为待核验问题，最终排序全部来自同一套合并口径。" />
+      <PageIntro kicker="行业全景" title="WAIC最集中的项目是AI底座和机器人，具体热点分布在算力、模型、企业软件和机器人各环节" text="20个一级行业可以继续拆成89个二级方向和191个具体产品方向。页面先比较全局热度，再逐层看到产品、任务、项目和典型公司。" />
 
       <section className="metric-strip">
-        <article><span>官方项目</span><b>{formatNumber(data.metadata.uniqueProjects)}</b><small>一条未少</small></article>
-        <article><span>合并后产品组</span><b>{formatNumber(data.metadata.productFamilies)}</b><small>用于比较热度</small></article>
-        <article><span>三级方向</span><b>{data.metadata.level3Count}</b><small>继续下钻的最细层</small></article>
-        <article><span>参展企业</span><b>{data.metadata.enterprises}</b><small>标准化名称后</small></article>
+        <article><Database aria-hidden="true" /><span>WAIC展品</span><b>{formatNumber(data.metadata.uniqueProjects)}</b><small>全部项目可查询</small></article>
+        <article><Boxes aria-hidden="true" /><span>产品系列</span><b>{formatNumber(data.metadata.productFamilies)}</b><small>用于比较行业热度</small></article>
+        <article><GitBranch aria-hidden="true" /><span>具体方向</span><b>{data.metadata.level3Count}</b><small>最细行业分类</small></article>
+        <article><Building2 aria-hidden="true" /><span>参展企业</span><b>{data.metadata.enterprises}</b><small>覆盖全部项目</small></article>
       </section>
 
       <section className="answer-grid">
-        <article className="primary-answer"><span>全量结论</span><h2>核心技术有{core.familyCount}组，具身智能有{embodied.familyCount}组，两者合计占全部产品组的{formatPercent(infrastructureShare)}</h2><p>WAIC展台的项目供给集中在算力、模型、企业软件、机器人整机和机器人部件。这个比例描述展会项目结构，不代表市场收入份额。</p></article>
-        <article><span>人形机器人位置</span><h3>22组，排在191个三级方向的第{humanoid.rank}位</h3><p>通用具身机器人70组、AI芯片38组、大语言模型29组、机器人关节26组，数量都更高。</p></article>
-        <article><span>软件侧集中点</span><h3>企业软件77组，大模型与算法69组</h3><p>办公协同、内容创作、客服营销和软件开发已经形成一批明确产品。</p></article>
+        <article className="primary-answer"><span>全量结论</span><h2>核心技术有{core.familyCount}个产品系列，具身智能有{embodied.familyCount}个，两者合计占{formatPercent(infrastructureShare)}</h2><p>项目供给集中在算力、模型、企业软件、机器人整机和机器人部件。这个比例反映WAIC展品结构。</p></article>
+        <article><span>人形机器人位置</span><h3>22个产品系列，在191个具体方向中排第{humanoid.rank}</h3><p>通用具身机器人70个、AI芯片38个、大语言模型29个、机器人关节26个，数量均高于人形机器人。</p></article>
+        <article><span>软件侧集中点</span><h3>企业软件77个，大模型与算法69个</h3><p>内容创作、办公协同、客服营销和软件开发已经形成清晰的产品方向。</p></article>
       </section>
 
+      <section><SectorBubbleChart data={data} go={go} /></section>
+
       <section>
-        <div className="section-title"><span>一级行业</span><h2>全部20个板块按同一口径排名</h2><p>点击任意一行，会进入该行业的二级、三级、实际项目、使用对象和落地线索。</p></div>
+        <div className="section-title"><span>一级行业</span><h2>20个行业按产品系列数量排名</h2><p>点击任意行业，可以继续查看二级方向、具体产品、项目进展和典型公司。</p></div>
         <div className="rank-list sector-rank-list">
           {data.sectors.map((sector) => (
             <button key={sector.name} onClick={() => go("drilldown", sector.name)}>
               <i>{String(sector.rank).padStart(2, "0")}</i>
               <span><b>{sector.name}</b><small>{sector.l2[0]?.name}是其中最大的二级方向</small></span>
               <div className="rank-bar"><u style={{ width: `${Math.max(2, sector.familyCount / core.familyCount * 100)}%` }} /></div>
-              <strong>{sector.familyCount}</strong><em>组</em>
+              <strong>{sector.familyCount}</strong><em>个</em>
             </button>
           ))}
         </div>
@@ -275,15 +372,15 @@ function OverviewPage({ data, openDetail, go }: { data: DashboardData; openDetai
         <div>
           <div className="section-title"><span>整体方向</span><h2>展品正在沿三条路径形成产品</h2></div>
           <div className="direction-list">
-            <article><i>1</i><div><h3>算力从单个芯片扩展到整套系统</h3><p>芯片38组，服务器24组，互联23组，液冷21组，智算集群19组，供应链各环节都有集中项目。</p></div></article>
-            <article><i>2</i><div><h3>机器人同步补整机、关节、感知和操作</h3><p>通用具身整机70组，关节26组，传感器20组，灵巧手16组。人形机器人只是整机形态中的一个三级方向。</p></div></article>
-            <article><i>3</i><div><h3>企业软件开始承接固定工作</h3><p>办公协同17组、内容创作19组、客服营销12组、软件开发10组，产品逐渐连接企业已有数据和流程。</p></div></article>
+            <article><i><Database aria-hidden="true" /></i><div><h3>算力从芯片扩展到整套系统</h3><p>芯片38个产品系列，服务器24个，互联23个，液冷21个，智算集群19个，供应链各环节都有集中项目。</p></div></article>
+            <article><i><Target aria-hidden="true" /></i><div><h3>机器人同时补齐整机、关节、感知和操作</h3><p>通用具身整机70个产品系列，关节26个，传感器20个，灵巧手16个。人形机器人是整机形态中的一个具体方向。</p></div></article>
+            <article><i><Sparkles aria-hidden="true" /></i><div><h3>企业软件开始承接固定工作</h3><p>内容创作19个产品系列、办公协同17个、客服营销12个、软件开发10个，产品正在连接企业已有数据和流程。</p></div></article>
           </div>
         </div>
       </section>
 
       <section>
-        <div className="section-title"><span>三级方向</span><h2>191个具体方向中，前15名是什么</h2><p>每一行都可以打开实际项目。排序看合并后的产品组数量。</p></div>
+        <div className="section-title"><span>具体产品</span><h2>191个具体方向中数量最多的15类产品</h2><p>点击任意一行，可以查看对应的全部产品系列和原始展品。</p></div>
         <div className="rank-list l3-global-list">
           {topL3.map((row) => <button key={`${row.l1}-${row.l2}-${row.name}`} onClick={() => openDetail({ kind: "match", title: row.name, explanation: row.work, match: { l1: [row.l1], l2: [row.l2], l3: [row.name] } })}><i>{String(row.rank).padStart(2, "0")}</i><span><b>{row.name}</b><small>{row.work}</small></span><u>{row.l1}</u><strong>{row.familyCount}</strong><em>查看项目</em></button>)}
         </div>
@@ -311,7 +408,7 @@ function DrilldownPage({ data, sectorName, setSectorName, openDetail }: { data: 
 
   return (
     <>
-      <PageIntro kicker="所有行业使用同一套拆法" title="先看大板块，再看具体产品、工作、使用对象和实际项目" text="选择任何一级行业，页面都会继续拆到二级和三级。机器人整机额外按任务重算，因为“人形、四足、轮式”只说明外形，无法说明它实际完成什么工作。" />
+      <PageIntro kicker="行业拆解" title="从行业进入业务方向，再看到具体产品、任务和项目" text="选择任意一级行业，都可以查看二级业务、具体产品、项目进展、代表性展品和典型公司。机器人整机还可以按实际任务继续拆分。" />
 
       <section className="sector-picker">
         {data.sectors.map((row) => <button key={row.name} className={row.name === sector.name ? "active" : ""} onClick={() => chooseSector(row.name)}><span>{row.name}</span><b>{row.familyCount}</b></button>)}
@@ -319,30 +416,34 @@ function DrilldownPage({ data, sectorName, setSectorName, openDetail }: { data: 
 
       <section className="sector-summary">
         <div><span>第{sector.rank}位 · 一级行业</span><h2>{sector.name}</h2><p>{sector.definition}</p></div>
-        <div><b>{sector.familyCount}</b><span>组不同产品</span><small>{sector.enterpriseCount}家公司 · {sector.projectCount}条原始项目</small></div>
+        <div><b>{sector.familyCount}</b><span>个产品系列</span><small>{sector.enterpriseCount}家公司 · {sector.projectCount}件展品</small></div>
       </section>
 
       <section className="plain-answer">
         <span>这个板块具体热在哪里</span>
-        <h2>{sector.l2[0]?.name}是最大的二级方向，有{sector.l2[0]?.familyCount}组；继续下钻后，{topL3?.name}最多，有{topL3?.familyCount}组</h2>
+        <h2>{sector.l2[0]?.name}是最大的二级方向，有{sector.l2[0]?.familyCount}个产品系列；其中{topL3?.name}最多，有{topL3?.familyCount}个</h2>
         <p>{topL3?.work}。主要面向{topL3?.audience}。</p>
       </section>
 
+      <section><SectorSankey sector={sector} /></section>
+
+      <section><ProgressChart data={data} sector={sector} /></section>
+
       <section>
-        <div className="section-title"><span>第一层下钻</span><h2>{sector.name}下面有哪些二级业务</h2></div>
+        <div className="section-title"><span>业务方向</span><h2>{sector.name}下面有哪些二级业务</h2></div>
         <div className="l2-list">
           {sector.l2.map((row) => <button key={row.name} className={row.name === l2?.name ? "active" : ""} onClick={() => setL2Name(row.name)}><div><b>{row.name}</b><strong>{row.familyCount}</strong></div><p>{row.definition}</p><small>{row.l3.length}个三级方向</small></button>)}
         </div>
       </section>
 
       {l2 && <section>
-        <div className="section-title"><span>第二层下钻</span><h2>{l2.name}具体在做什么</h2><p>这里的“落地线索”只读取WAIC项目自述中的量产、交付、试点、研发等关键词，不替代外部尽调。</p></div>
+        <div className="section-title"><span>具体产品</span><h2>{l2.name}具体在做什么</h2><p>每一项都写明产品完成的工作、使用对象和项目介绍中的进展阶段。</p></div>
         <div className="deep-list">
           {l2.l3.map((row, index) => (
             <button key={row.name} onClick={() => openDetail({ kind: "match", title: row.name, explanation: row.work, match: { l1: [row.l1], l2: [row.l2], l3: [row.name] } })}>
               <i>{String(index + 1).padStart(2, "0")}</i>
               <div><b>{row.name}</b><p>{row.work}</p><small>使用对象：{row.audience}</small></div>
-              <aside><span>{row.evidenceStages[0]?.name || "产品说明"}</span><small>{row.evidenceStages[0]?.count || row.familyCount}/{row.familyCount}组</small></aside>
+              <aside><span>{row.evidenceStages[0]?.name || "产品说明"}</span><small>{row.evidenceStages[0]?.count || row.familyCount}/{row.familyCount}个</small></aside>
               <strong>{row.familyCount}</strong>
               <em>查看项目</em>
             </button>
@@ -354,7 +455,7 @@ function DrilldownPage({ data, sectorName, setSectorName, openDetail }: { data: 
 
       <section className="split-section">
         <div>
-          <div className="section-title"><span>实际项目</span><h2>{l2?.name}里的代表性展品</h2><p>优先显示有重要公司依据、合并项目较多或说明较完整的产品，点击后可看原始项目。</p></div>
+          <div className="section-title"><span>实际项目</span><h2>{l2?.name}里的代表性展品</h2><p>点击展品，可以查看产品用途、使用对象和同一产品系列包含的原始项目。</p></div>
           <div className="example-list">
             {examples.map((family) => <button key={family.id} onClick={() => openDetail({ kind: "family", familyId: family.id })}><span>{family.l3}</span><h3>{family.representativeProject}</h3><p>{family.enterprise}</p><small>{family.evidenceStage} · {family.projectCount > 1 ? `${family.projectCount}条同类展品已合并` : "1条WAIC展品"}</small></button>)}
           </div>
@@ -362,16 +463,16 @@ function DrilldownPage({ data, sectorName, setSectorName, openDetail }: { data: 
         <div>
           <div className="section-title"><span>发展方向</span><h2>{sector.name}正在往哪里走</h2></div>
           <div className="direction-list">
-            <article><i>1</i><div><h3>产品方向</h3><p>{sector.direction}</p></div></article>
-            <article><i>2</i><div><h3>当前落地状态</h3><p>{sector.maturity}</p></div></article>
-            <article><i>3</i><div><h3>阅读边界</h3><p>{sector.caveat}</p></div></article>
+            <article><i><Target aria-hidden="true" /></i><div><h3>产品方向</h3><p>{sector.direction}</p></div></article>
+            <article><i><TrendingUp aria-hidden="true" /></i><div><h3>当前进展</h3><p>{sector.maturity}</p></div></article>
+            <article><i><BarChart3 aria-hidden="true" /></i><div><h3>数据含义</h3><p>{sector.caveat}</p></div></article>
           </div>
         </div>
       </section>
 
       <section>
-        <div className="section-title"><span>代表公司</span><h2>{companies.length ? `${sector.name}只列证据排名靠前的${companies.length}家公司` : `${sector.name}暂未选代表公司`}</h2><p>入选依据是公司体量、用户或客户规模、已经形成的交付闭环。WAIC展品数量不参与公司重要性评分。</p></div>
-        {companies.length > 0 ? <div className="company-grid">{companies.map((company, index) => <CompanyCard key={company.key} rank={index + 1} company={company} data={data} openDetail={openDetail} />)}</div> : <div className="empty-note">现有公开证据不足，页面保留全部项目，不随机挑选公司填满版面。</div>}
+        <div className="section-title"><span>典型公司</span><h2>{companies.length ? `${sector.name}的典型公司` : `${sector.name}暂未展示典型公司`}</h2><p>{companies.length ? "这些公司已经形成较大的业务规模、用户或客户基础，并拥有可持续的产品与交付闭环。" : "全部相关展品仍可在项目查询页查看。"}</p></div>
+        {companies.length > 0 ? <div className="company-grid">{companies.map((company, index) => <CompanyCard key={company.key} rank={index + 1} company={company} data={data} openDetail={openDetail} />)}</div> : <div className="empty-note">当前板块的全部展品可在项目查询页查看。</div>}
       </section>
     </>
   );
@@ -380,12 +481,12 @@ function DrilldownPage({ data, sectorName, setSectorName, openDetail }: { data: 
 function RobotTaskSection({ data, openDetail }: { data: DashboardData; openDetail: (state: DetailState) => void }) {
   const [mode, setMode] = useState<"all" | "humanoid">("all");
   const tasks = mode === "humanoid" ? data.embodied.humanoidTasks : data.embodied.tasks;
-  return <section><div className="section-title"><span>整机再按任务拆</span><h2>机器人长什么样和它做什么工作分开统计</h2><p>这一步只用于机器人整机。部件、软件和模型不会被算成已经完成任务的机器人。</p></div><div className="task-toggle"><button className={mode === "all" ? "active" : ""} onClick={() => setMode("all")}>全部机器人整机</button><button className={mode === "humanoid" ? "active" : ""} onClick={() => setMode("humanoid")}>只看人形机器人</button></div><div className="task-list">{tasks.map((task, index) => <button key={task.name} onClick={() => openDetail({ kind: "task", task })}><i>{String(index + 1).padStart(2, "0")}</i><span><b>{task.name}</b><small>{task.examples.slice(0, 3).map((item) => `${item.enterprise} · ${item.project}`).join("；")}</small></span><strong>{task.familyCount}</strong><em>组</em></button>)}</div></section>;
+  return <section><div className="section-title"><span>机器人任务</span><h2>机器人整机最常完成哪些任务</h2><p>外形和任务分开查看，可以区分人形、四足、轮式机器人分别在做什么工作。</p></div><div className="task-toggle"><button className={mode === "all" ? "active" : ""} onClick={() => setMode("all")}>全部机器人整机</button><button className={mode === "humanoid" ? "active" : ""} onClick={() => setMode("humanoid")}>人形机器人</button></div><div className="task-list">{tasks.map((task, index) => <button key={task.name} onClick={() => openDetail({ kind: "task", task })}><i>{String(index + 1).padStart(2, "0")}</i><span><b>{task.name}</b><small>{task.examples.slice(0, 3).map((item) => `${item.enterprise} · ${item.project}`).join("；")}</small></span><strong>{task.familyCount}</strong><em>个</em></button>)}</div></section>;
 }
 
 function CompanyCard({ rank, company, data, openDetail }: { rank: number; company: ImportantCompany; data: DashboardData; openDetail: (state: DetailState) => void }) {
   const project = company.familyIds.map((id) => data.families.find((row) => row.id === id)).find(Boolean);
-  return <article className="company-card"><div><i>{String(rank).padStart(2, "0")}</i><span>证据评分 {company.totalScore}/6</span></div><h3>{company.company}</h3><dl><div><dt>公司体量</dt><dd>{company.scale}</dd></div><div><dt>用户或客户</dt><dd>{company.users}</dd></div><div><dt>业务闭环</dt><dd>{company.loop}</dd></div></dl>{project && <button onClick={() => openDetail({ kind: "family", familyId: project.id })}><span>WAIC项目</span><b>{project.representativeProject}</b></button>}<footer>{company.sourceUrls.slice(0, 2).map((url, index) => <a key={url} href={url} target="_blank" rel="noreferrer">公司依据{company.sourceUrls.length > 1 ? index + 1 : ""}</a>)}</footer></article>;
+  return <article className="company-card"><div><i>{String(rank).padStart(2, "0")}</i><Building2 aria-hidden="true" /></div><h3>{company.company}</h3><dl><div><dt>业务规模</dt><dd>{company.scale}</dd></div><div><dt>用户与客户</dt><dd>{company.users}</dd></div><div><dt>产品闭环</dt><dd>{company.loop}</dd></div></dl>{project && <button onClick={() => openDetail({ kind: "family", familyId: project.id })}><span>WAIC展品</span><b>{project.representativeProject}</b></button>}<footer>{company.sourceUrls.slice(0, 2).map((url, index) => <a key={url} href={url} target="_blank" rel="noreferrer">公司资料{company.sourceUrls.length > 1 ? index + 1 : ""}</a>)}</footer></article>;
 }
 
 function ProjectPage({ data, openDetail }: { data: DashboardData; openDetail: (state: DetailState) => void }) {
@@ -407,27 +508,27 @@ function ProjectPage({ data, openDetail }: { data: DashboardData; openDetail: (s
   }), [rows, query, l1, l2, l3]);
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
-  return <><PageIntro kicker="完整项目库" title="1432条原始项目全部可查，962组合并产品用于看趋势" text="可以搜索公司、产品和简介，也可以按一级、二级、三级行业筛选。合并视图不会删除原始项目，点开产品组就能看到里面每一条展品。" /><section className="project-controls"><div className="view-switch"><button className={!raw ? "active" : ""} onClick={() => { setRaw(false); setPage(1); }}>合并产品组</button><button className={raw ? "active" : ""} onClick={() => { setRaw(true); setPage(1); }}>原始1432条</button></div><label className="search"><span>搜索</span><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="公司、产品或简介" /></label><label><span>一级行业</span><select value={l1} onChange={(event) => { setL1(event.target.value); setL2(""); setL3(""); setPage(1); }}><option value="">全部</option>{data.sectors.map((row) => <option key={row.name}>{row.name}</option>)}</select></label><label><span>二级方向</span><select value={l2} onChange={(event) => { setL2(event.target.value); setL3(""); setPage(1); }}><option value="">全部</option>{l2Options.map((value) => <option key={value}>{value}</option>)}</select></label><label><span>三级方向</span><select value={l3} onChange={(event) => { setL3(event.target.value); setPage(1); }}><option value="">全部</option>{l3Options.map((value) => <option key={value}>{value}</option>)}</select></label></section><p className="result-count">找到 <b>{formatNumber(filtered.length)}</b> {raw ? "条原始项目" : "组产品"}</p><section className="project-grid">{pageRows.map((row) => { const family = "representativeProject" in row ? row : data.families.find((item) => item.id === row.familyId)!; const name = "name" in row ? row.name : row.representativeProject; return <article key={raw ? (row as Project).code : (row as Family).id}><div className="path-tags"><span>{row.l1}</span><span>{row.l2}</span><span>{row.l3}</span></div><h3>{name}</h3><b>{row.enterprise}</b><p>{clip(row.description)}</p><small>{raw ? `展位 ${(row as Project).booth || "未填写"}` : `${(row as Family).evidenceStage} · ${(row as Family).projectCount}条原始展品`}</small><button onClick={() => openDetail({ kind: "family", familyId: family.id })}>查看完整信息</button></article>; })}</section><div className="pagination"><button disabled={page === 1} onClick={() => setPage((value) => value - 1)}>上一页</button><span>{page} / {pageCount}</span><button disabled={page === pageCount} onClick={() => setPage((value) => value + 1)}>下一页</button></div></>;
+  return <><PageIntro kicker="项目查询" title={`${formatNumber(data.metadata.uniqueProjects)}件展品全部可查，${formatNumber(data.metadata.productFamilies)}个产品系列用于比较趋势`} text="可以搜索公司、产品和简介，也可以按一级、二级和具体产品方向筛选。产品系列视图可以继续打开其中每一件原始展品。" /><section className="project-controls"><div className="view-switch"><button className={!raw ? "active" : ""} onClick={() => { setRaw(false); setPage(1); }}>产品系列</button><button className={raw ? "active" : ""} onClick={() => { setRaw(true); setPage(1); }}>全部展品</button></div><label className="search"><span><Search aria-hidden="true" />搜索</span><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="公司、产品或简介" /></label><label><span>一级行业</span><select value={l1} onChange={(event) => { setL1(event.target.value); setL2(""); setL3(""); setPage(1); }}><option value="">全部</option>{data.sectors.map((row) => <option key={row.name}>{row.name}</option>)}</select></label><label><span>二级方向</span><select value={l2} onChange={(event) => { setL2(event.target.value); setL3(""); setPage(1); }}><option value="">全部</option>{l2Options.map((value) => <option key={value}>{value}</option>)}</select></label><label><span>具体产品</span><select value={l3} onChange={(event) => { setL3(event.target.value); setPage(1); }}><option value="">全部</option>{l3Options.map((value) => <option key={value}>{value}</option>)}</select></label></section><p className="result-count">找到 <b>{formatNumber(filtered.length)}</b> {raw ? "件展品" : "个产品系列"}</p><section className="project-grid">{pageRows.map((row) => { const family = "representativeProject" in row ? row : data.families.find((item) => item.id === row.familyId)!; const name = "name" in row ? row.name : row.representativeProject; return <article key={raw ? (row as Project).code : (row as Family).id}><div className="path-tags"><span>{row.l1}</span><span>{row.l2}</span><span>{row.l3}</span></div><h3>{name}</h3><b>{row.enterprise}</b><p>{clip(row.description)}</p><small>{raw ? `展位 ${(row as Project).booth || "未填写"}` : `${(row as Family).evidenceStage} · ${(row as Family).projectCount}件原始展品`}</small><button onClick={() => openDetail({ kind: "family", familyId: family.id })}>查看完整信息</button></article>; })}</section><div className="pagination"><button disabled={page === 1} onClick={() => setPage((value) => value - 1)}>上一页</button><span>{page} / {pageCount}</span><button disabled={page === pageCount} onClick={() => setPage((value) => value + 1)}>下一页</button></div></>;
 }
 
 function MethodPage({ data }: { data: DashboardData }) {
-  return <><PageIntro kicker="统计说明" title="每个结论都能回到同一套数据和规则" text="本页解释完整性、去重、行业拆解、落地线索和代表公司怎么处理。" /><section className="method-list"><article><span>01</span><div><h2>项目范围包含官方目录中的全部{formatNumber(data.metadata.uniqueProjects)}条项目</h2><p>抓取时间为{data.metadata.fetchedAt}。原始项目全部留在查询页，并保留项目名称、企业、展位、简介和官方行业标签。</p></div></article><article><span>02</span><div><h2>重复展品只在趋势统计时合并</h2><p>{data.metadata.aggregationRule}。这样可以避免同一家公司用多个型号把某个方向的热度抬高。</p></div></article><article><span>03</span><div><h2>20个一级行业都继续拆到二级、三级和实际项目</h2><p>所有行业共用“是什么、做什么工作、谁使用、项目有哪些、WAIC材料出现什么落地词”的字段。用户举例不改变排名。</p></div></article><article><span>04</span><div><h2>热度表示WAIC展品集中度</h2><p>一级、二级、三级排名都使用合并后的产品组数量。它适合回答展会上哪类供给最集中，无法直接替代收入、出货量、市场份额和融资规模。</p></div></article><article><span>05</span><div><h2>落地线索只读取项目自述</h2><p>页面把“量产、交付、试点、科研”等词分组显示，帮助区分项目介绍写到了哪一步。这些内容来自企业在WAIC目录中的自述，没有被当成外部核验后的成熟度结论。</p></div></article><article><span>06</span><div><h2>代表公司最多保留三家</h2><p>公司体量、用户或客户规模、销售或部署闭环各按0至2分评分。只有证据较完整的公司才展示；样本或证据不足的板块保持空缺。</p></div></article></section></>;
+  return <><PageIntro kicker="数据说明" title="展品、产品系列和行业热度分别表示什么" text="这里给出页面中各类数字的含义，方便在行业比较和项目查询之间切换。" /><section className="method-list"><article><span><Database aria-hidden="true" /></span><div><h2>{formatNumber(data.metadata.uniqueProjects)}件展品覆盖WAIC官方项目目录</h2><p>项目查询页保留名称、企业、展位、简介和行业分类，可以直接查看每一件原始展品。</p></div></article><article><span><Boxes aria-hidden="true" /></span><div><h2>{formatNumber(data.metadata.productFamilies)}个产品系列用于比较供给热度</h2><p>同一家公司在同一具体方向中的多个相关型号合并为一个产品系列，原始展品仍可逐件查看。</p></div></article><article><span><GitBranch aria-hidden="true" /></span><div><h2>20个一级行业拆成89个二级方向和191个具体产品方向</h2><p>行业拆解页可以从大板块进入业务方向，再查看产品完成的工作、使用对象、项目进展和实际展品。</p></div></article><article><span><BarChart3 aria-hidden="true" /></span><div><h2>热度表示WAIC展品中的产品集中度</h2><p>行业排名使用产品系列数量，适合比较展会上哪些供给更集中，不等同于收入、出货量或市场份额。</p></div></article><article><span><TrendingUp aria-hidden="true" /></span><div><h2>进展阶段来自WAIC项目介绍</h2><p>规模应用、客户交付、试点验证、研发教学和产品发布，表示企业在项目简介中介绍到的当前进展。</p></div></article></section></>;
 }
 
 function DetailDrawer({ data, state, open, close }: { data: DashboardData; state: DetailState; open: (state: DetailState) => void; close: () => void }) {
   let body = null;
   if (state?.kind === "match") {
     const rows = data.families.filter((row) => matches(row, state.match));
-    body = <><span className="drawer-label">具体方向</span><h2>{state.title}</h2><p className="drawer-intro">{state.explanation}</p><div className="drawer-number"><b>{rows.length}</b><span>组合并产品 · {rows.reduce((sum, row) => sum + row.projectCount, 0)}条原始展品</span></div><div className="drawer-section"><h3>全部相关产品组</h3><div className="family-buttons">{rows.map((row) => <button key={row.id} onClick={() => open({ kind: "family", familyId: row.id })}><span><b>{row.representativeProject}</b><small>{row.enterprise} · {row.evidenceStage}</small></span><strong>{row.projectCount}条</strong></button>)}</div></div></>;
+    body = <><span className="drawer-label">具体方向</span><h2>{state.title}</h2><p className="drawer-intro">{state.explanation}</p><div className="drawer-number"><b>{rows.length}</b><span>个产品系列 · {rows.reduce((sum, row) => sum + row.projectCount, 0)}件原始展品</span></div><div className="drawer-section"><h3>全部相关产品系列</h3><div className="family-buttons">{rows.map((row) => <button key={row.id} onClick={() => open({ kind: "family", familyId: row.id })}><span><b>{row.representativeProject}</b><small>{row.enterprise} · {row.evidenceStage}</small></span><strong>{row.projectCount}件</strong></button>)}</div></div></>;
   }
   if (state?.kind === "task") {
     const rows = state.task.familyIds.map((id) => data.families.find((row) => row.id === id)).filter(Boolean) as Family[];
-    body = <><span className="drawer-label">机器人任务</span><h2>{state.task.name}</h2><p className="drawer-intro">{state.task.direction}</p><div className="drawer-number"><b>{state.task.familyCount}</b><span>组机器人整机 · {state.task.projectCount}条原始展品</span></div><div className="drawer-section"><h3>完成这个任务的项目</h3><div className="family-buttons">{rows.map((row) => <button key={row.id} onClick={() => open({ kind: "family", familyId: row.id })}><span><b>{row.representativeProject}</b><small>{row.enterprise} · {row.l3}</small></span><strong>{row.projectCount}条</strong></button>)}</div></div></>;
+    body = <><span className="drawer-label">机器人任务</span><h2>{state.task.name}</h2><p className="drawer-intro">{state.task.direction}</p><div className="drawer-number"><b>{state.task.familyCount}</b><span>个机器人产品系列 · {state.task.projectCount}件原始展品</span></div><div className="drawer-section"><h3>完成这个任务的项目</h3><div className="family-buttons">{rows.map((row) => <button key={row.id} onClick={() => open({ kind: "family", familyId: row.id })}><span><b>{row.representativeProject}</b><small>{row.enterprise} · {row.l3}</small></span><strong>{row.projectCount}件</strong></button>)}</div></div></>;
   }
   if (state?.kind === "family") {
     const family = data.families.find((row) => row.id === state.familyId);
     const projects = data.projects.filter((row) => row.familyId === state.familyId);
-    if (family) body = <><span className="drawer-label">产品组</span><h2>{family.representativeProject}</h2><p className="drawer-intro">{family.enterprise}</p><div className="path-tags drawer-path"><span>{family.l1}</span><span>{family.l2}</span><span>{family.l3}</span></div><div className="fact-grid"><article><span>具体做什么</span><p>{family.work}</p></article><article><span>谁会使用</span><p>{family.audience}</p></article><article><span>WAIC落地线索</span><p>{family.evidenceStage}</p><small>{family.evidenceStageBasis}</small></article>{family.task && <article><span>机器人任务</span><p>{family.task}</p><small>{family.taskDirection}</small></article>}</div><div className="drawer-section"><h3>项目介绍</h3><p>{family.description || "WAIC目录没有填写项目简介"}</p></div><div className="drawer-section"><h3>合并前的原始展品</h3><div className="raw-projects">{projects.map((project) => <article key={project.code}><div><b>{project.name}</b><span>{project.booth || "展位未填写"}</span></div><p>{project.description || "没有填写简介"}</p><small>分类依据：{project.basis}</small></article>)}</div></div></>;
+    if (family) body = <><span className="drawer-label">产品系列</span><h2>{family.representativeProject}</h2><p className="drawer-intro">{family.enterprise}</p><div className="path-tags drawer-path"><span>{family.l1}</span><span>{family.l2}</span><span>{family.l3}</span></div><div className="fact-grid"><article><span>具体做什么</span><p>{family.work}</p></article><article><span>谁会使用</span><p>{family.audience}</p></article><article><span>项目进展</span><p>{family.evidenceStage}</p><small>{family.evidenceStageBasis}</small></article>{family.task && <article><span>机器人任务</span><p>{family.task}</p><small>{family.taskDirection}</small></article>}</div><div className="drawer-section"><h3>项目介绍</h3><p>{family.description || "WAIC目录没有填写项目简介"}</p></div><div className="drawer-section"><h3>这个产品系列包含的展品</h3><div className="raw-projects">{projects.map((project) => <article key={project.code}><div><b>{project.name}</b><span>{project.booth || "展位未填写"}</span></div><p>{project.description || "没有填写简介"}</p><small>行业分类：{project.basis}</small></article>)}</div></div></>;
   }
   return <><button aria-label="关闭详情" className={`drawer-shade ${state ? "open" : ""}`} onClick={close} /><aside className={`detail-drawer ${state ? "open" : ""}`}><button className="drawer-close" onClick={close}>关闭</button>{body}</aside></>;
 }

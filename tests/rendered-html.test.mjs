@@ -91,3 +91,20 @@ test("人形机器人按全量三级方向排序并保留任务拆解", async ()
   assert.equal(data.globalL3[0].name, "通用具身机器人");
   assert.equal(data.globalL3[1].name, "AI芯片与加速卡");
 });
+
+test("页面使用结果化文案并包含三类核心图表", async () => {
+  const source = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  assert.match(source, /SectorBubbleChart/);
+  assert.match(source, /SectorSankey/);
+  assert.match(source, /ProgressChart/);
+  assert.match(source, /典型公司/);
+  assert.doesNotMatch(source, /只列证据排名靠前|证据评分|不随机|待核验|合并口径/);
+  assert.doesNotMatch(source, /组产品|产品组|组机器人|\d+组/);
+});
+
+test("页面最小文字字号不低于12px", async () => {
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  const fontSizes = [...css.matchAll(/font-size:\s*(\d+)px/g)].map((match) => Number(match[1]));
+  assert.ok(fontSizes.length > 0);
+  assert.ok(fontSizes.every((value) => value >= 12));
+});
