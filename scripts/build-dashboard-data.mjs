@@ -11,6 +11,7 @@ const outputPath = path.join(projectRoot, "public/data/waic-dashboard.json");
 
 const raw = JSON.parse(await fs.readFile(sourcePath, "utf8"));
 const builderSource = await fs.readFile(workbookBuilderPath, "utf8");
+const officialIndustryByName = new Map(raw.officialIndustries.map((row) => [row.industryPrimaryName, row]));
 
 function extractLiteral(startMarker, endMarker) {
   const start = builderSource.indexOf(startMarker);
@@ -476,6 +477,8 @@ const l1Rows = ranked(l1FamilyCounts).map(([name, familyCount], index) => {
   return {
     rank: index + 1,
     name,
+    officialCode: officialIndustryByName.get(name)?.industryPrimaryCode || "",
+    officialNameEn: officialIndustryByName.get(name)?.industryPrimaryNameEn || "",
     definition: l1Definitions[name] || `${name}下面包含${matchingL2.slice(0, 4).map((row) => row.name).join("、")}`,
     familyCount,
     enterpriseCount: new Set(matchingFamilies.map((family) => family.enterprise)).size,
@@ -538,6 +541,8 @@ const dashboard = {
     level2Count: l2Rows.length,
     level3Count: l3Rows.length,
     aggregationRule: "同一标准化企业在同一一级、二级、三级行业下的项目合并为一个产品族，原始项目仍全部保留",
+    level1Source: "WAIC官方项目目录的主行业标签",
+    level2Level3Source: "本台账根据项目名称、简介和交付形态统一细分",
   },
   sectors: l1Rows,
   globalL3,

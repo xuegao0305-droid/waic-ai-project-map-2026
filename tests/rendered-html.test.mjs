@@ -112,13 +112,37 @@ test("分类先区分交付形态并保留关键回归样本", async () => {
 test("页面使用结果化文案并包含三类核心图表", async () => {
   const source = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
   assert.match(source, /SectorComparisonChart/);
-  assert.match(source, /SectorSankey/);
+  assert.match(source, /SectorStructureChart/);
   assert.match(source, /ProgressChart/);
   assert.match(source, /sector-comparison-row/);
   assert.doesNotMatch(source, /bubble-chart|SectorBubbleChart/);
+  assert.doesNotMatch(source, /其他产品|其他具体产品|其他方向/);
   assert.match(source, /典型公司/);
   assert.doesNotMatch(source, /只列证据排名靠前|证据评分|不随机|待核验|合并口径/);
   assert.doesNotMatch(source, /组产品|产品组|组机器人|\d+组/);
+});
+
+test("一级分类保留WAIC来源且具体产品类别不被合并隐藏", async () => {
+  const data = JSON.parse(await readFile(new URL("../public/data/waic-dashboard.json", import.meta.url), "utf8"));
+  const core = data.sectors.find((sector) => sector.name === "核心技术");
+  assert.equal(core.officialCode, "VO_INDUSTRY_L1_01");
+  assert.equal(core.officialNameEn, "Core Technology");
+  assert.match(data.metadata.level1Source, /WAIC官方/);
+  assert.match(data.metadata.level2Level3Source, /本台账/);
+
+  const compute = core.l2.find((row) => row.name === "AI算力与硬件");
+  assert.deepEqual(
+    compute.l3.map((row) => [row.name, row.familyCount]),
+    [
+      ["服务器与算力一体机", 28],
+      ["AI芯片与加速卡", 27],
+      ["存储与高速互联", 26],
+      ["数据中心与液冷", 19],
+      ["智算中心与计算集群", 14],
+      ["边缘计算与终端算力", 10],
+    ],
+  );
+  assert.equal(compute.l3.reduce((sum, row) => sum + row.familyCount, 0), compute.familyCount);
 });
 
 test("页面最小文字字号不低于12px", async () => {

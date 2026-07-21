@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BarChart3, Boxes, Building2, Database, GitBranch, Search, Sparkles, Target, TrendingUp, Workflow } from "lucide-react";
+import { BarChart3, Boxes, Building2, Database, GitBranch, Search, Sparkles, Target, TrendingUp } from "lucide-react";
 
 type Project = {
   code: string;
@@ -67,6 +67,8 @@ type Level2 = {
 type Sector = {
   rank: number;
   name: string;
+  officialCode: string;
+  officialNameEn: string;
   definition: string;
   familyCount: number;
   enterpriseCount: number;
@@ -115,6 +117,8 @@ type DashboardData = {
     level2Count: number;
     level3Count: number;
     aggregationRule: string;
+    level1Source: string;
+    level2Level3Source: string;
   };
   sectors: Sector[];
   globalL3: Level3[];
@@ -247,47 +251,16 @@ function SectorComparisonChart({ data, go }: { data: DashboardData; go: (page: P
   </div>;
 }
 
-type SankeyNode = { name: string; value: number; y: number; h: number; parent?: string };
-
-function SectorSankey({ sector }: { sector: Sector }) {
-  const width = 1180;
-  const topL2 = [...sector.l2].sort((a, b) => b.familyCount - a.familyCount).slice(0, 6);
-  const otherL2Value = sector.l2.slice(6).reduce((sum, row) => sum + row.familyCount, 0);
-  const l2Rows = [...topL2.map((row) => ({ name: row.name, value: row.familyCount, source: row })), ...(otherL2Value ? [{ name: "其他方向", value: otherL2Value, source: null }] : [])];
-  const leaves = l2Rows.flatMap((row) => {
-    if (!row.source) return [{ name: "其他具体产品", value: row.value, parent: row.name }];
-    const top = [...row.source.l3].sort((a, b) => b.familyCount - a.familyCount).slice(0, 2);
-    const other = row.value - top.reduce((sum, item) => sum + item.familyCount, 0);
-    return [...top.map((item) => ({ name: item.name, value: item.familyCount, parent: row.name })), ...(other > 0 ? [{ name: "其他产品", value: other, parent: row.name }] : [])];
-  });
-  const height = Math.max(620, 120 + leaves.length * 30);
-  const scale = Math.min(1.08, (height - 110 - (leaves.length - 1) * 18) / sector.familyCount);
-  const place = <T extends { name: string; value: number }>(rows: T[], gap: number) => {
-    const totalH = rows.reduce((sum, row) => sum + row.value * scale, 0) + Math.max(0, rows.length - 1) * gap;
-    let cursor = (height - totalH) / 2;
-    return rows.map((row) => { const node = { ...row, y: cursor, h: row.value * scale }; cursor += node.h + gap; return node; });
-  };
-  const l2Nodes = place(l2Rows, 38) as SankeyNode[];
-  const leafNodes = place(leaves, 18) as SankeyNode[];
-  const rootH = sector.familyCount * scale;
-  const rootY = (height - rootH) / 2;
-  const l1Links = l2Nodes.map((node, index) => ({ node, sourceY: rootY + l2Nodes.slice(0, index).reduce((sum, item) => sum + item.h, 0) + node.h / 2 }));
-  const leafByParent = new Map<string, SankeyNode[]>();
-  leafNodes.forEach((node) => leafByParent.set(node.parent!, [...(leafByParent.get(node.parent!) || []), node]));
-  const l2Links = l2Nodes.flatMap((node) => (leafByParent.get(node.name) || []).map((leaf, index, siblings) => ({ node, leaf, sourceY: node.y + siblings.slice(0, index).reduce((sum, item) => sum + item.h, 0) + leaf.h / 2 })));
-  const curve = (x1: number, y1: number, x2: number, y2: number) => `M${x1},${y1} C${x1 + 125},${y1} ${x2 - 125},${y2} ${x2},${y2}`;
-  return <div className="chart-wrap sankey-wrap">
-    <div className="chart-heading"><Workflow aria-hidden="true" /><div><h2>{sector.name}的产品从大板块继续拆到具体方向</h2><p>连线越宽，代表该方向包含的产品系列越多。</p></div></div>
-    <svg className="sankey-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="sankey-title sankey-desc">
-      <title id="sankey-title">{sector.name}产品结构桑基图</title><desc id="sankey-desc">从{sector.name}流向主要二级方向，再流向各方向中数量最多的具体产品。</desc>
-      {l1Links.map(({ node, sourceY }) => <path key={`l1-${node.name}`} d={curve(126, sourceY, 410, node.y + node.h / 2)} strokeWidth={Math.max(2, node.h)} className="sankey-link sankey-link-primary"><title>{sector.name}到{node.name}：{node.value}个产品系列</title></path>)}
-      {l2Links.map(({ node, leaf, sourceY }, index) => <path key={`l2-${index}`} d={curve(436, sourceY, 822, leaf.y + leaf.h / 2)} strokeWidth={Math.max(2, leaf.h)} className="sankey-link"><title>{node.name}到{leaf.name}：{leaf.value}个产品系列</title></path>)}
-      <rect x="96" y={rootY} width="30" height={Math.max(4, rootH)} rx="5" className="sankey-node root-node" />
-      <text x="82" y={rootY + rootH / 2 - 5} textAnchor="end" className="sankey-name">{sector.name}</text><text x="82" y={rootY + rootH / 2 + 14} textAnchor="end" className="sankey-value">{sector.familyCount}个</text>
-      {l2Nodes.map((node) => <g key={node.name}><rect x="410" y={node.y} width="26" height={Math.max(4, node.h)} rx="4" className="sankey-node" /><text x="398" y={node.y + node.h / 2 - 4} textAnchor="end" className="sankey-name">{node.name}</text><text x="398" y={node.y + node.h / 2 + 14} textAnchor="end" className="sankey-value">{node.value}个</text></g>)}
-      {leafNodes.map((node, index) => <g key={`${node.parent}-${node.name}-${index}`}><rect x="822" y={node.y} width="22" height={Math.max(4, node.h)} rx="4" className="sankey-node leaf-node" /><text x="858" y={node.y + node.h / 2 + 5} className="sankey-name">{node.name} · {node.value}</text></g>)}
-      <text x="111" y="30" textAnchor="middle" className="sankey-column">一级行业</text><text x="423" y="30" textAnchor="middle" className="sankey-column">二级方向</text><text x="833" y="30" textAnchor="middle" className="sankey-column">具体产品</text>
-    </svg>
+function SectorStructureChart({ sector, l2, setL2Name, openDetail }: { sector: Sector; l2: Level2; setL2Name: (name: string) => void; openDetail: (state: DetailState) => void }) {
+  const maxL2 = Math.max(...sector.l2.map((row) => row.familyCount));
+  const maxL3 = Math.max(...l2.l3.map((row) => row.familyCount));
+  return <div className="chart-wrap structure-wrap">
+    <div className="chart-heading"><GitBranch aria-hidden="true" /><div><h2>{sector.name}包含{sector.l2.length}个二级方向，{l2.name}进一步分成{l2.l3.length}类具体产品</h2><p>左侧列出全部二级方向，点击后右侧显示该方向下的全部具体产品类别</p></div></div>
+    <div className="structure-chart" role="group" aria-label={`${sector.name}从一级分类到二级方向和具体产品的完整结构`}>
+      <article className="structure-root"><span>WAIC官方一级分类</span><h3>{sector.name}</h3><b>{sector.familyCount}</b><small>个产品系列</small><em>{sector.officialCode}</em></article>
+      <div className="structure-column structure-l2"><header><span>全部二级方向</span><b>{sector.l2.length}个</b></header>{sector.l2.map((row) => <button key={row.name} type="button" className={row.name === l2.name ? "active" : ""} aria-pressed={row.name === l2.name} onClick={() => setL2Name(row.name)}><span><b>{row.name}</b><small>{row.l3.length}类具体产品</small></span><i><u style={{ width: `${Math.max(3, row.familyCount / maxL2 * 100)}%` }} /></i><strong>{row.familyCount}</strong></button>)}</div>
+      <div className="structure-column structure-l3"><header><span>{l2.name}的全部具体产品</span><b>{l2.familyCount}个系列</b></header>{l2.l3.map((row) => <button key={row.name} type="button" onClick={() => openDetail({ kind: "match", title: row.name, explanation: row.work, match: { l1: [row.l1], l2: [row.l2], l3: [row.name] } })}><span><b>{row.name}</b><small>{row.work}</small></span><i><u style={{ width: `${Math.max(3, row.familyCount / maxL3 * 100)}%` }} /></i><strong>{row.familyCount}</strong></button>)}</div>
+    </div>
   </div>;
 }
 
@@ -403,8 +376,8 @@ function DrilldownPage({ data, sectorName, setSectorName, openDetail }: { data: 
       </section>
 
       <section className="sector-summary">
-        <div><span>第{sector.rank}位 · 一级行业</span><h2>{sector.name}</h2><p>{sector.definition}</p></div>
-        <div><b>{sector.familyCount}</b><span>个产品系列</span><small>{sector.enterpriseCount}家公司 · {sector.projectCount}件展品</small></div>
+        <div><span>WAIC官方一级分类，热度第{sector.rank}位</span><h2>{sector.name}</h2><p>WAIC将这个一级分类命名为{sector.name}。{sector.definition}</p></div>
+        <div><b>{sector.familyCount}</b><span>个产品系列</span><small>{sector.enterpriseCount}家公司，{sector.projectCount}件展品</small></div>
       </section>
 
       <section className="plain-answer">
@@ -413,7 +386,7 @@ function DrilldownPage({ data, sectorName, setSectorName, openDetail }: { data: 
         <p>{topL3?.work}。主要面向{topL3?.audience}。</p>
       </section>
 
-      <section><SectorSankey sector={sector} /></section>
+      {l2 && <section><SectorStructureChart sector={sector} l2={l2} setL2Name={setL2Name} openDetail={openDetail} /></section>}
 
       <section><ProgressChart data={data} sector={sector} /></section>
 
@@ -500,7 +473,7 @@ function ProjectPage({ data, openDetail }: { data: DashboardData; openDetail: (s
 }
 
 function MethodPage({ data }: { data: DashboardData }) {
-  return <><PageIntro kicker="数据说明" title="展品、产品系列和行业热度分别表示什么" text="这里给出页面中各类数字的含义，方便在行业比较和项目查询之间切换。" /><section className="method-list"><article><span><Database aria-hidden="true" /></span><div><h2>{formatNumber(data.metadata.uniqueProjects)}件展品覆盖WAIC官方项目目录</h2><p>项目查询页保留名称、企业、展位、简介和行业分类，可以直接查看每一件原始展品。</p></div></article><article><span><Boxes aria-hidden="true" /></span><div><h2>{formatNumber(data.metadata.productFamilies)}个产品系列用于比较供给热度</h2><p>同一家公司在同一具体方向中的多个相关型号合并为一个产品系列，原始展品仍可逐件查看。</p></div></article><article><span><GitBranch aria-hidden="true" /></span><div><h2>{data.metadata.level1Count}个一级行业拆成{data.metadata.level2Count}个二级方向和{data.metadata.level3Count}个具体产品方向</h2><p>行业拆解页可以从大板块进入业务方向，再查看产品完成的工作、使用对象、项目进展和实际展品。</p></div></article><article><span><BarChart3 aria-hidden="true" /></span><div><h2>热度表示WAIC展品中的产品集中度</h2><p>行业排名使用产品系列数量，适合比较展会上哪些供给更集中，不等同于收入、出货量或市场份额。</p></div></article><article><span><TrendingUp aria-hidden="true" /></span><div><h2>进展阶段来自WAIC项目介绍</h2><p>规模应用、客户交付、试点验证、研发教学和产品发布，表示企业在项目简介中介绍到的当前进展。</p></div></article></section></>;
+  return <><PageIntro kicker="数据说明" title="展品、产品系列和行业热度分别表示什么" text="这里给出页面中各类数字的含义，方便在行业比较和项目查询之间切换。" /><section className="method-list"><article><span><Database aria-hidden="true" /></span><div><h2>{formatNumber(data.metadata.uniqueProjects)}件展品覆盖WAIC官方项目目录</h2><p>项目查询页保留名称、企业、展位、简介和行业分类，可以直接查看每一件原始展品。</p></div></article><article><span><Boxes aria-hidden="true" /></span><div><h2>{formatNumber(data.metadata.productFamilies)}个产品系列用于比较供给热度</h2><p>同一家公司在同一具体方向中的多个相关型号合并为一个产品系列，原始展品仍可逐件查看。</p></div></article><article><span><GitBranch aria-hidden="true" /></span><div><h2>{data.metadata.level1Count}个一级行业名称来自WAIC官方目录</h2><p>“核心技术”“具身智能”等一级名称均沿用WAIC官方项目主标签。</p></div></article><article><span><GitBranch aria-hidden="true" /></span><div><h2>{data.metadata.level2Count}个二级方向和{data.metadata.level3Count}个具体产品方向来自本台账细分</h2><p>细分时结合项目名称、项目简介和交付形态，行业拆解页会列出每个二级方向下的全部具体产品类别。</p></div></article><article><span><BarChart3 aria-hidden="true" /></span><div><h2>热度表示WAIC展品中的产品集中度</h2><p>行业排名使用产品系列数量，适合比较展会上哪些供给更集中，不等同于收入、出货量或市场份额。</p></div></article><article><span><TrendingUp aria-hidden="true" /></span><div><h2>进展阶段来自WAIC项目介绍</h2><p>规模应用、客户交付、试点验证、研发教学和产品发布，表示企业在项目简介中介绍到的当前进展。</p></div></article></section></>;
 }
 
 function DetailDrawer({ data, state, open, close }: { data: DashboardData; state: DetailState; open: (state: DetailState) => void; close: () => void }) {
