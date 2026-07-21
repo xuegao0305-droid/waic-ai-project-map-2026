@@ -13,6 +13,18 @@ const output = process.env.WAIC_STANDALONE_OUTPUT
   : defaultOutput;
 
 const safeData = JSON.stringify(data).replaceAll("<", "\\u003c");
+const policyRecords = [
+  { date: "07.16", category: "国际合作", type: "国际组织", title: "世界人工智能合作组织协议在上海签署", summary: "29个创始成员国共同签署协议，总部设在上海，定位为独立政府间国际组织", highlights: ["建立长期国际协作机制", "上海成为组织总部所在地", "重点推进普惠、安全与全球治理"], source: "https://www.mfa.gov.cn/wjb_673085/zzjg_673183/xws_674681/xgxw_674683/202607/t20260716_11984399.shtml" },
+  { date: "07.17", category: "国内扶持", type: "上海产业扶持政策", title: "上海发布进一步推动AI+制造发展的若干措施", summary: "13项措施覆盖算力、工业模型、数据集、示范工厂、机器人、工业软件和安全能力，是大会期间对国内企业最直接的资金支持文件", highlights: ["第三方算力租用最高支持4000万元", "工业AI项目、数据平台和示范基地最高支持2000万元", "具身机器人真实工厂应用最高支持1000万元"], source: "https://sheitc.sh.gov.cn/cyfz/20260717/7986191fa75f49a698259f01c829df52.html" },
+  { date: "07.17", category: "国际合作", type: "国家国际合作行动", title: "国家发展改革委等部门发布人工智能合作发展行动计划", summary: "行动计划把国际合作拆成数据、算力、开源、AI+应用、人才、标准、安全和智能向善八个方向", highlights: ["建设跨境可信数据空间和多语种语料", "向发展中国家提供可负担的算力服务", "推动制造、医疗、教育和农业等场景合作"], source: "https://www.ndrc.gov.cn/fggz/202607/t20260717_1406573.html" },
+  { date: "07.17", category: "治理文件", type: "国际伦理治理行动", title: "国际人工智能伦理治理行动计划发布", summary: "治理范围覆盖人工智能全生命周期，重点处理风险分类、隐私、偏见、可解释性和弱势群体保护", highlights: ["按风险等级实施分类治理", "明确研发、部署和使用各环节责任", "强化隐私保护、偏见纠正和可解释性"], source: "https://www.ncsti.gov.cn/kjdt/ztbd/2026rgzndh/202607/t20260717_251481.html" },
+  { date: "07.17", category: "重要发言", type: "大会主旨演讲", title: "习近平提出开放合作、安全可控、文明包容和多边治理四个方向", summary: "发言同时给出多项国际合作安排，重点面向发展中国家和区域合作组织", highlights: ["未来五年为发展中国家提供5000个培训名额", "面向东盟、阿盟、非盟等建设应用合作中心", "气象AI预警方案已在30个国家使用"], source: "https://www.itsec.gov.cn/xwtp/202607/t20260717_265054.html" },
+  { date: "07.17", category: "治理文件", type: "大会治理共识", title: "大会主席声明把智能体权限、行为边界和可追溯性列入治理重点", summary: "声明同时讨论开源、数据流动、绿色算力、劳动者权益、前沿模型风险和关键基础设施安全", highlights: ["智能体需要清楚的决策权限和行为边界", "高风险行为需要日志、追溯和风险提示", "产品应把安全能力放进设计和开发阶段"], source: "https://www.fmprc.gov.cn/zyxw/202607/t20260717_11984707.shtml" },
+  { date: "07.18", category: "重要发言", type: "部市重要发言", title: "阴和俊与龚正强调普惠应用、风险防范和敏捷治理", summary: "科技部与上海市的发言都把技术应用和治理能力放在同一框架内，上海将继续推进制度、标准和技术支撑", highlights: ["缩小数字鸿沟并扩大普惠应用", "发展风险识别和安全防范技术", "推进敏捷治理、标准协调和全球合作"], source: "https://www.shanghai.gov.cn/nw4411/20260719/54d217700d434338a70e08c9389ac26e.html" },
+  { date: "07.19", category: "国际合作", type: "国际合作项目", title: "全球智惠平台和人工智能语料场景清单发布", summary: "平台与场景清单面向应急救援、海外风险评估和制造业图像等具体需求，开始把国际合作转成可执行项目", highlights: ["连接国际公共服务和产业场景", "以语料和应用需求推动项目落地", "覆盖应急、海外风险和制造业图像"], source: "https://www.shanghai.gov.cn/nw4411/20260719/79b7fa4c703c4420a5f2cd048ce5fd4f.html" },
+  { date: "07.20", category: "项目投资", type: "上海项目签约", title: "上海32个人工智能重点项目签约，总金额超过409亿元", summary: "签约项目覆盖AI基础设施、智能体、具身智能和AI for Science，同时发布212项采购需求", highlights: ["32个项目签约金额超过409亿元", "上海联通UniAI项目计划投资超过250亿元", "212项采购需求预计意向金额203.6亿元"], source: "https://www.shanghai.gov.cn/nw4411/20260721/b964a0614c41408ea1d916a8fd211761.html" },
+];
+const safePolicyRecords = JSON.stringify(policyRecords).replaceAll("<", "\\u003c");
 
 const html = `<!doctype html>
 <html lang="zh-CN">
@@ -25,7 +37,7 @@ const html = `<!doctype html>
 	  .side nav button span{display:grid}.side nav button small{display:block}
 	  .static-action{cursor:pointer}.raw-switch{margin-bottom:0}
 	  .metric-symbol,.heading-symbol{display:grid;place-items:center;border-radius:8px;background:var(--teal-light);color:var(--teal-dark);font-size:16px}.metric-symbol{width:23px;height:23px}.heading-symbol{width:27px;height:27px}.chart-heading{grid-template-columns:34px minmax(0,1fr)}
-  @media(max-width:850px){.side{transform:none;position:relative;width:100%;height:auto;padding:22px}.side nav{grid-template-columns:repeat(4,minmax(0,1fr));padding:18px 0 0}.side-note{display:none}.content-shell{margin-left:0;padding-top:30px}.mobile-menu{display:none}.site-brand{padding-bottom:16px}}
+  @media(max-width:850px){.side{transform:none;position:relative;width:100%;height:auto;padding:22px}.side nav{grid-template-columns:repeat(5,minmax(0,1fr));padding:18px 0 0}.side-note{display:none}.content-shell{margin-left:0;padding-top:30px}.mobile-menu{display:none}.site-brand{padding-bottom:16px}}
   @media(max-width:620px){.side nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
 </head>
@@ -37,7 +49,8 @@ const html = `<!doctype html>
 	      <button class="active" data-page="overview"><i>01</i><span><b>行业全景</b><small>比较全部${data.metadata.level1Count}个行业</small></span></button>
 	      <button data-page="drilldown"><i>02</i><span><b>行业拆解</b><small>看到具体产品和任务</small></span></button>
 	      <button data-page="projects"><i>03</i><span><b>项目查询</b><small>搜索和筛选全部展品</small></span></button>
-	      <button data-page="method"><i>04</i><span><b>数据说明</b><small>范围、单位和阅读方法</small></span></button>
+	      <button data-page="policy"><i>04</i><span><b>政策与发言</b><small>查看大会期间的重要变化</small></span></button>
+	      <button data-page="method"><i>05</i><span><b>数据说明</b><small>范围、单位和阅读方法</small></span></button>
     </nav>
 	    <div class="side-note"><span>完整数据范围</span><b>${data.metadata.uniqueProjects.toLocaleString("zh-CN")}个WAIC项目</b><small>全部保留。同一家公司在同一具体方向下的相关展品合并为${data.metadata.productFamilies}个产品系列。</small></div>
   </aside>
@@ -45,14 +58,16 @@ const html = `<!doctype html>
     <div id="overview" class="static-page active"></div>
     <div id="drilldown" class="static-page"></div>
     <div id="projects" class="static-page"></div>
+    <div id="policy" class="static-page"></div>
     <div id="method" class="static-page"></div>
-    <footer><span>数据来自WAIC 2026官方项目目录</span><a href="${data.metadata.officialPage}" target="_blank" rel="noreferrer">打开官方目录</a></footer>
+    <footer><span>项目数据来自WAIC 2026官方目录，政策信息来自政府部门公开文件</span><a href="${data.metadata.officialPage}" target="_blank" rel="noreferrer">打开官方目录</a></footer>
   </main>
 </div>
 <button id="shade" aria-label="关闭详情" class="drawer-shade"></button>
 <aside id="drawer" class="detail-drawer"><button id="drawerClose" class="drawer-close">关闭</button><div id="drawerBody"></div></aside>
 <script>
 const DATA=${safeData};
+const POLICY_RECORDS=${safePolicyRecords};
 const $=s=>document.querySelector(s), all=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>new Intl.NumberFormat("zh-CN").format(n), pct=n=>(n*100).toFixed(1)+"%";
@@ -152,6 +167,17 @@ function renderProjects(){
   $("#prev").onclick=()=>{projectPage--;renderProjects()};$("#next").onclick=()=>{projectPage++;renderProjects()};
 }
 
+function renderPolicy(filter="全部"){
+  const filters=["全部","国内扶持","国际合作","治理文件","重要发言","项目投资"],rows=filter==="全部"?POLICY_RECORDS:POLICY_RECORDS.filter(x=>x.category===filter);
+  $("#policy").innerHTML=intro("WAIC 2026政策与发言","制造业补贴给出明确金额，智能体治理开始强调权限和追溯","大会前后公开了国内产业扶持文件、国际行动计划、治理共识、重要发言和项目签约，本页按文件性质分开呈现")+
+  '<section class="metric-strip policy-metrics"><article><span class="metric-symbol">▣</span><span>国内产业扶持</span><b>1份</b><small>给出明确资金上限</small></article><article><span class="metric-symbol">◎</span><span>国际行动计划</span><b>2份</b><small>合作发展与伦理治理</small></article><article><span class="metric-symbol">◇</span><span>WAICO创始成员</span><b>29国</b><small>总部设在上海</small></article><article><span class="metric-symbol">¥</span><span>上海签约项目</span><b>409亿+</b><small>32个人工智能重点项目</small></article></section>'+
+  '<section><div class="section-title"><span>主要影响</span><h2>资金投向制造场景，治理重点落到智能体产品设计，国际合作围绕算力和数据展开</h2></div><div class="policy-readout"><article><i>¥</i><div><span>对企业预算最直接</span><h3>AI+制造政策给出4000万、2000万、1000万和500万元四档支持上限</h3><p>资金覆盖算力租用、工业模型、数据平台、示范工厂、机器人、工业软件和数据采购</p></div></article><article><i>✓</i><div><span>对产品设计最直接</span><h3>智能体需要清楚的决策权限、行为边界、日志和风险提示</h3><p>企业级和公共服务智能体会更重视审计、追溯和安全设计</p></div></article><article><i>◎</i><div><span>对出海合作最直接</span><h3>算力、可信数据空间、多语种语料和开源社区成为合作基础</h3><p>国际合作同时向制造、医疗、教育、农业和公共治理等应用场景延伸</p></div></article></div></section>'+
+  '<section><div class="section-title"><span>上海AI+制造支持上限</span><h2>算力租用金额最高，工业AI项目与示范基地排在第二档</h2><p>金额是单个方向的最高支持上限，具体申报条件以正式文件为准</p></div><div class="funding-map"><article class="funding-primary"><span>第三方算力租用</span><b>4000万元</b><p>用于工业大模型和智能体训练、部署与使用</p></article><article><span>工业AI项目、数据平台、示范基地</span><b>2000万元</b><p>同时覆盖AI机床、机器人和智能终端等方向</p></article><article><span>具身机器人、工业软件、安全能力</span><b>1000万元</b><p>具身机器人需要进入真实工厂场景</p></article><article><span>模型调用、私有部署和数据采购</span><b>500万元</b><p>帮助制造企业购买外部模型与数据服务</p></article></div></section>'+
+  '<section><div class="section-title"><span>政策、发言与项目进展</span><h2>按文件性质筛选大会前后的九项重要变化</h2><p>国内扶持政策、国际行动计划、治理共识、领导发言和项目投资分别标注</p></div><div class="policy-filters" role="group" aria-label="筛选政策与发言类别">'+filters.map(x=>'<button data-policy-filter="'+esc(x)+'" class="'+(filter===x?'active':'')+'">'+esc(x)+'<b>'+(x==="全部"?POLICY_RECORDS.length:POLICY_RECORDS.filter(y=>y.category===x).length)+'</b></button>').join("")+'</div><div class="policy-timeline">'+rows.map(x=>'<article><div class="policy-date"><span class="metric-symbol">□</span><b>'+esc(x.date)+'</b><span>'+esc(x.category)+'</span></div><div class="policy-card"><span class="policy-type">'+esc(x.type)+'</span><h3>'+esc(x.title)+'</h3><a class="policy-source" href="'+esc(x.source)+'" target="_blank" rel="noreferrer">具体事件｜信源 ↗</a><p>'+esc(x.summary)+'</p><ul>'+x.highlights.map(y=>'<li>'+esc(y)+'</li>').join("")+'</ul></div></article>').join("")+'</div></section>'+
+  '<section class="policy-outlook"><div><span class="heading-symbol">↗</span><span>整体方向</span><h2>政策工具正在从鼓励AI应用，转向给场景、给资金、给治理边界</h2></div><p>制造业文件把资金落到质检、排产、设备运维、供应链和机器人操作等任务；治理文件把权限、日志、追溯和安全提示落到智能体产品；国际合作把算力、数据、开源、培训和区域中心组合起来</p></section>';
+  bindActions($("#policy"));
+}
+
 function renderMethod(){
   $("#method").innerHTML=intro("数据说明","展品、产品系列和行业热度分别表示什么","这里给出页面中各类数字的含义，方便在行业比较和项目查询之间切换。")+'<section class="method-list"><article><span>◆</span><div><h2>'+fmt(DATA.metadata.uniqueProjects)+'件展品覆盖WAIC官方项目目录</h2><p>项目查询页保留名称、企业、展位、简介和行业分类，可以直接查看每一件原始展品。</p></div></article><article><span>▦</span><div><h2>'+fmt(DATA.metadata.productFamilies)+'个产品系列用于比较供给热度</h2><p>同一家公司在同一具体方向中的多个相关型号合并为一个产品系列，原始展品仍可逐件查看。</p></div></article><article><span>⑂</span><div><h2>'+DATA.metadata.level1Count+'个一级行业名称来自WAIC官方目录</h2><p>“核心技术”“具身智能”等一级名称均沿用WAIC官方项目主标签。</p></div></article><article><span>⑂</span><div><h2>'+DATA.metadata.level2Count+'个二级方向和'+DATA.metadata.level3Count+'个具体产品方向来自本台账细分</h2><p>细分时结合项目名称、项目简介和交付形态，行业拆解页会列出每个二级方向下的全部具体产品类别。</p></div></article><article><span>◫</span><div><h2>热度表示WAIC展品中的产品集中度</h2><p>行业排名使用产品系列数量，适合比较展会上哪些供给更集中，不等同于收入、出货量或市场份额。</p></div></article><article><span>↗</span><div><h2>进展阶段来自WAIC项目介绍</h2><p>规模应用、客户交付、试点验证、研发教学和产品发布，表示企业在项目简介中介绍到的当前进展。</p></div></article></section>';
 }
@@ -164,16 +190,19 @@ function bindActions(root=document){
   root.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>showTask(b.dataset.task,b.dataset.mode));
   root.querySelectorAll('[data-task-mode]').forEach(b=>b.onclick=()=>{const holder=$("#robotTasks");holder.outerHTML=robotTasks(b.dataset.taskMode);bindActions($("#drilldown"))});
   root.querySelectorAll('[data-raw]').forEach(b=>b.onclick=()=>{projectRaw=b.dataset.raw==="1";projectPage=1;renderProjects()});
+  root.querySelectorAll('[data-policy-filter]').forEach(b=>b.onclick=()=>renderPolicy(b.dataset.policyFilter));
 }
 
 function showPage(id){
   all('.static-page').forEach(x=>x.classList.toggle('active',x.id===id));
   all('.side nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));
-  if(id==='drilldown')renderDrilldown();if(id==='projects')renderProjects();
+  if(id==='drilldown')renderDrilldown();if(id==='projects')renderProjects();if(id==='policy')renderPolicy();
+  if(location.hash!=="#"+id)history.replaceState(null,"","#"+id);
   window.scrollTo(0,0);
 }
 all('.side nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
-renderOverview();renderDrilldown();renderProjects();renderMethod();
+renderOverview();renderDrilldown();renderProjects();renderPolicy();renderMethod();
+const initialPage=location.hash.slice(1);showPage(["overview","drilldown","projects","policy","method"].includes(initialPage)?initialPage:"overview");
 </script>
 </body>
 </html>`;

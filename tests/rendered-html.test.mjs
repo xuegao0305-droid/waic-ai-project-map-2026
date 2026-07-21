@@ -122,6 +122,15 @@ test("页面使用结果化文案并包含三类核心图表", async () => {
   assert.doesNotMatch(source, /组产品|产品组|组机器人|\d+组/);
 });
 
+test("GitHub公开版包含政策页和五项导航", async () => {
+  const html = await readFile(new URL("../docs/index.html", import.meta.url), "utf8");
+  assert.match(html, /data-page="policy"/);
+  assert.match(html, /id="policy"/);
+  assert.match(html, /制造业补贴给出明确金额/);
+  assert.match(html, /按文件性质筛选大会前后的九项重要变化/);
+  assert.match(html, /POLICY_RECORDS/);
+});
+
 test("一级分类保留WAIC来源且具体产品类别不被合并隐藏", async () => {
   const data = JSON.parse(await readFile(new URL("../public/data/waic-dashboard.json", import.meta.url), "utf8"));
   const core = data.sectors.find((sector) => sector.name === "核心技术");
