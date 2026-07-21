@@ -6,114 +6,158 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(here, "..");
 const workspaceRoot = path.resolve(projectRoot, "../..");
 const data = JSON.parse(await fs.readFile(path.join(projectRoot, "public/data/waic-dashboard.json"), "utf8"));
+const css = (await fs.readFile(path.join(projectRoot, "app/globals.css"), "utf8")).replace('@import "tailwindcss";', "");
 const output = path.join(workspaceRoot, "outputs/019f8290-6d5c-70f1-b237-6bb4e0e451e5/WAIC_2026_具体趋势拆解_可交互版.html");
 
-const themes = [
-  {
-    id: "core", name: "AI底座与软件", scope: ["核心技术"],
-    title: "算力硬件占核心技术的31%，芯片、服务器、互联和数据中心都出现了二十组以上产品",
-    text: "企业软件有77组，高于模型与算法的69组。内容创作、办公智能体和客服营销是应用端最集中的工作",
-    signals: [
-      ["AI芯片与加速卡", "AI芯片与加速卡", "训练和推理芯片、加速卡及板卡"],
-      ["服务器与算力一体机", "服务器与算力一体机", "可直接部署的AI服务器和算力设备"],
-      ["存储与高速互联", "存储与高速互联", "解决多卡和多机之间的数据传输"],
-      ["数据中心与液冷", "数据中心与液冷", "解决高密度算力的供电和散热"],
-      ["办公与协同智能体", "办公与协同智能体", "进入会议、文档和企业协作流程"],
-    ],
-    companies: ["华为", "阿里巴巴", "昆仑芯"],
-    directions: ["芯片、服务器、网络和集群管理继续被组合成超节点和算力一体机", "企业应用继续进入内容制作、办公协同、客服营销和软件开发"],
-  },
-  {
-    id: "embodied", name: "具身智能", scope: ["具身智能"],
-    title: "关节有26组，数量高于22组人形机器人；人形整机中最多的仍是动作、科研和展示项目",
-    text: "固定生产任务中工厂装配数量最多。部件公司集中解决稳定动作、环境感知和精细抓取",
-    signals: [
-      ["通用具身机器人", "通用具身机器人", "轮式双臂、移动操作平台和多用途机器人"],
-      ["关节与传动", "关节与传动部件", "决定负载、精度、速度和寿命"],
-      ["人形机器人", "人形机器人", "8组用于动作科研展示，4组用于工厂装配"],
-      ["传感器", "传感器与感知器件", "提供视觉、触觉、力觉和位置数据"],
-      ["灵巧手与夹爪", "灵巧手与夹爪", "完成抓取、拧动、按压和精细操作"],
-    ],
-    companies: ["宇树科技", "节卡机器人", "擎朗智能"],
-    directions: ["工厂装配、商用接待、仓储搬运和消防巡检已经出现具体任务", "关节、传感器和灵巧手合计62组，手眼协调仍是企业集中补齐的能力"],
-  },
-  {
-    id: "terminal", name: "智能终端", scope: ["智能终端"],
-    title: "AI眼镜、显示交互设备和AI电脑手机各有8到9组，三种终端形态数量接近",
-    text: "眼镜强调翻译、记录和拍摄，电脑手机强调本地运行，健康穿戴强调持续监测",
-    signals: [
-      ["AI眼镜与AR终端", "AI眼镜与AR终端", "翻译、记录、拍摄和视觉提示"],
-      ["显示影音与交互设备", "显示影音与交互设备", "显示器、影音设备和空间交互硬件"],
-      ["AI电脑平板与手机", "AI电脑平板与手机", "本地模型、多设备协同和个人助手"],
-      ["健康与运动穿戴", "健康与运动穿戴", "持续采集健康和运动数据"],
-      ["AI玩具与陪伴设备", "AI玩具与陪伴设备", "服务儿童、家庭和情感互动"],
-    ],
-    companies: ["荣耀", "科大讯飞", "中科创达"],
-    directions: ["手机、电脑和眼镜继续增加设备端模型和本地数据处理", "AI眼镜先解决翻译、提词、记录和拍摄等高频小任务"],
-  },
-  {
-    id: "industry", name: "工业制造", scope: ["工业互联与智能制造", "制造业"],
-    title: "工业项目先解决连接、控制和检测，直接做排产与工艺优化的项目数量很少",
-    text: "工业计算与网络有16组，自动化装备13组，电子器件与硬件12组。生产智能化的9组项目中有6组是机器视觉和质量检测",
-    signals: [
-      ["工业计算与网络", "服务器工作站与扩展硬件", "工业服务器、接口设备、边缘计算和网络硬件"],
-      ["机器人无人机与清洁设备", "机器人无人机与清洁设备", "执行工厂和园区里的移动或操作任务"],
-      ["电子器件与计算硬件", "电子器件与计算硬件", "生产设备和计算系统需要的基础硬件"],
-      ["工业视觉与质量检测", "工业视觉与质量检测", "生产智能化中数量最多的具体任务"],
-      ["排产工艺与生产优化", "排产工艺与生产优化", "直接改动生产计划和工艺参数"],
-    ],
-    companies: ["西门子", "海克斯康", "宝信软件"],
-    directions: ["缺陷检测和质量判断有清楚的输入、输出和人工复核方式", "排产和工艺优化需要继续连接MES、PLC和设备实时数据"],
-  },
-  {
-    id: "medical", name: "医疗健康", scope: ["智慧医疗"],
-    title: "病理检验和早筛有7组，临床决策有5组，医学影像辅助诊断只有2组",
-    text: "医疗项目的集中点已经扩到检验、早筛和医生决策。健康监测有9组，康复养老有7组",
-    signals: [
-      ["检验病理与早筛", "检验病理与早筛", "处理检验数据、病理信息和疾病早期筛查"],
-      ["临床决策与医生智能体", "临床决策与医生智能体", "整理病历、查资料和制定诊疗建议"],
-      ["慢病监测与生命体征", "慢病监测与生命体征", "持续记录心电、血压和其他健康数据"],
-      ["康复训练与康复机器人", "康复训练与康复机器人", "完成训练、动作辅助和恢复评估"],
-      ["医学影像辅助诊断", "医学影像辅助诊断", "数量少于病理早筛和医生智能体"],
-    ],
-    companies: ["联影智能", "蚂蚁集团"],
-    directions: ["医生智能体继续连接病历、影像和医学知识，并保留医生确认记录", "慢病监测、健康咨询和康复设备继续连接医院外的长期服务"],
-  },
-];
-
 const safeData = JSON.stringify(data).replaceAll("<", "\\u003c");
-const safeThemes = JSON.stringify(themes).replaceAll("<", "\\u003c");
 
 const html = `<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WAIC 2026 具体趋势拆解</title>
-<style>
-:root{--n:#071b32;--i:#132943;--m:#68798b;--p:#f4f6f5;--w:#fff;--l:#dce3e5;--t:#009b90;--tl:#ddf2ef}*{box-sizing:border-box}body{margin:0;background:var(--p);color:var(--i);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}button,input,select{font:inherit}button{color:inherit}.side{position:fixed;inset:0 auto 0 0;width:238px;padding:28px 20px;background:var(--n);color:#fff}.brand{padding:6px 7px 24px;border-bottom:1px solid #ffffff20}.brand small,.kick{color:var(--t);font-size:10px;font-weight:800;letter-spacing:.12em}.brand b{display:block;margin-top:7px;font-size:21px}.brand span{display:block;margin-top:4px;color:#97a9bc;font-size:10px}.side nav{display:grid;gap:7px;padding:24px 0}.side nav button{padding:12px;border:0;border-radius:6px;background:transparent;color:#c2cedb;text-align:left;cursor:pointer}.side nav button.active,.side nav button:hover{background:#009b9028;color:#fff}.side nav small{display:block;margin-top:3px;color:#8296aa;font-size:9px}.main{margin-left:238px;padding:45px clamp(22px,4vw,65px);max-width:1500px}.page{display:none}.page.active{display:block}.intro{max-width:1000px;padding-bottom:30px;border-bottom:1px solid var(--l)}h1{margin:12px 0;font-size:clamp(34px,4.4vw,57px);line-height:1.1;letter-spacing:-.045em}.intro p,.answer p,.sectorHero p{max-width:820px;margin:0;color:var(--m);font-size:13px;line-height:1.8}.tabs{display:flex;gap:7px;margin:36px 0 15px;overflow:auto}.tabs button,.toggle button{flex:0 0 auto;padding:9px 13px;border:1px solid #cbd5da;border-radius:6px;background:#fff;color:var(--m);font-size:10px;font-weight:750;cursor:pointer}.tabs button.active,.toggle button.active{border-color:var(--n);background:var(--n);color:#fff}.answer,.sectorHero{display:grid;grid-template-columns:1fr 160px;gap:25px;padding:28px;border-radius:9px;background:var(--n);color:#fff}.answer h2,.sectorHero h2{margin:9px 0 12px;font-size:clamp(25px,3vw,39px);line-height:1.28}.answer p,.sectorHero p{color:#b2c1d0}.total{display:grid;align-content:center;justify-items:center;border-left:1px solid #ffffff25}.total b{font-size:50px}.total span{color:#aebed0;font-size:10px}section.block{margin-top:38px}.blockHead{margin-bottom:14px}.blockHead h2{margin:7px 0;font-size:26px}.blockHead p{margin:0;color:var(--m);font-size:11px}.signals,.tasks,.l3s{border:1px solid var(--l);border-radius:8px;background:#fff}.signals button,.tasks button,.l3s button{display:grid;grid-template-columns:1fr 50px 70px;gap:12px;align-items:center;width:100%;padding:15px 17px;border:0;border-bottom:1px solid #edf0f1;background:transparent;text-align:left;cursor:pointer}.signals button:last-child,.tasks button:last-child,.l3s button:last-child{border-bottom:0}.signals button:hover,.tasks button:hover,.l3s button:hover{background:#f5faf9}.signals span,.tasks span,.l3s span{display:grid;gap:4px}.signals small,.tasks small,.l3s small{color:var(--m);font-size:10px;line-height:1.5}.signals strong,.tasks strong,.l3s strong{font-size:22px;text-align:right}.signals em,.l3s em{color:#007970;font-size:9px;font-style:normal;text-align:right}.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}.directions{display:grid;gap:9px}.directions article{padding:17px;border:1px solid var(--l);border-radius:7px;background:#fff}.directions h3{margin:0 0 8px;font-size:15px}.directions p{margin:0;color:var(--m);font-size:10px;line-height:1.7}.companies{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.company{padding:18px;border:1px solid var(--l);border-radius:8px;background:#fff}.company>span{color:var(--t);font-size:9px;font-weight:800}.company h3{margin:20px 0 14px;font-size:19px}.company dl{display:grid;gap:10px;margin:0}.company dl div{display:grid;grid-template-columns:62px 1fr;gap:7px}.company dt{font-size:9px;font-weight:800}.company dd{margin:0;color:var(--m);font-size:9px;line-height:1.55}.company button{width:100%;margin-top:15px;padding:10px;border:0;border-radius:5px;background:#eef4f4;color:#007970;font-size:9px;font-weight:800;text-align:left;cursor:pointer}.taskCall{margin:32px 0 0;padding:22px;border-left:5px solid var(--t);background:#fff}.taskCall h2{margin:8px 0;font-size:27px}.taskCall p{margin:0;color:var(--m);font-size:11px;line-height:1.7}.toggle{display:flex;gap:6px;margin-bottom:10px}.sectorBtns{display:flex;gap:6px;margin:34px 0 12px;overflow:auto}.sectorBtns button{flex:0 0 auto;padding:9px 11px;border:1px solid #cbd5da;border-radius:5px;background:#fff;font-size:9px;cursor:pointer}.sectorBtns button.active{border-color:var(--t);background:var(--tl);color:#006e66}.l2s{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.l2s button{min-height:130px;padding:14px;border:1px solid var(--l);border-radius:7px;background:#fff;text-align:left;cursor:pointer}.l2s button.active{border-color:var(--t)}.l2s div{display:flex;justify-content:space-between;gap:8px}.l2s p{margin:18px 0 0;color:var(--m);font-size:9px;line-height:1.6}.filters{display:grid;grid-template-columns:1.3fr repeat(3,.7fr);gap:7px;margin:35px 0 12px;padding:12px;border:1px solid var(--l);border-radius:8px;background:#fff}.filters label{display:grid;gap:4px}.filters span{color:var(--m);font-size:8px}.filters input,.filters select{width:100%;height:35px;padding:0 8px;border:1px solid #cbd5da;border-radius:4px;font-size:10px}.result{margin-bottom:10px;color:var(--m);font-size:9px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.card{display:flex;min-height:220px;flex-direction:column;padding:15px;border:1px solid var(--l);border-radius:7px;background:#fff}.tags{display:flex;flex-wrap:wrap;gap:4px}.tags span{padding:3px 5px;background:#eef2f3;color:var(--m);font-size:7px}.card h3{margin:14px 0 5px;font-size:14px}.card>b{color:#007970;font-size:9px}.card p{margin:11px 0;color:var(--m);font-size:9px;line-height:1.6}.card small{margin-top:auto;color:#8793a1;font-size:8px}.card button{align-self:flex-start;margin-top:10px;padding:0;border:0;background:none;color:#007970;font-size:9px;font-weight:800;cursor:pointer}.pager{display:flex;justify-content:center;gap:12px;align-items:center;margin-top:18px;font-size:9px}.pager button{padding:7px 10px;border:1px solid #cbd5da;border-radius:4px;background:#fff}.shade{position:fixed;inset:0;z-index:70;display:none;background:#071b328c}.shade.open{display:block}.drawer{position:fixed;inset:0 0 0 auto;z-index:80;width:min(570px,94vw);overflow:auto;padding:26px;background:#fff;transform:translateX(105%);transition:.2s}.drawer.open{transform:none}.close{float:right;padding:7px 9px;border:1px solid #cbd5da;border-radius:4px;background:#fff;font-size:9px}.drawer h2{clear:both;padding-top:20px;margin:10px 0 7px;font-size:28px}.drawerIntro{color:var(--m);font-size:11px;line-height:1.7}.drawerList{display:grid;gap:6px;margin-top:22px}.drawerList button,.raw{padding:12px;border:1px solid var(--l);border-radius:5px;background:#fff;text-align:left}.drawerList button{display:flex;justify-content:space-between;gap:10px;cursor:pointer}.drawerList span{display:grid;gap:4px}.drawerList small,.raw small{color:var(--m);font-size:8px}.raw{margin-top:7px}.raw div{display:flex;justify-content:space-between;gap:10px}.raw p{color:var(--m);font-size:9px;line-height:1.6}.method{display:grid;gap:0;margin-top:34px;border-top:1px solid var(--l)}.method article{display:grid;grid-template-columns:50px 1fr;gap:16px;padding:22px 5px;border-bottom:1px solid var(--l)}.method article>span{color:var(--t);font-size:10px;font-weight:800}.method h2{margin:0 0 7px;font-size:18px}.method p{margin:0;color:var(--m);font-size:11px;line-height:1.7}
-@media(max-width:900px){.side{transform:translateX(-100%)}.main{margin-left:0;padding:30px 16px}.companies,.cards,.l2s{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.answer,.sectorHero,.two{grid-template-columns:1fr}.total{min-height:100px;border-top:1px solid #ffffff25;border-left:0}.companies,.cards,.l2s{grid-template-columns:1fr}.signals button,.l3s button{grid-template-columns:1fr 36px}.signals em,.l3s em{display:none}.filters{grid-template-columns:1fr}h1{font-size:34px}}
-</style></head><body>
-<aside class="side"><div class="brand"><small>WAIC 2026</small><b>具体趋势拆解</b><span>产品、任务、项目和公司</span></div><nav><button data-page="trends" class="active">具体趋势<small>先看五个重点板块</small></button><button data-page="embodied">具身任务<small>哪种机器人做什么</small></button><button data-page="sectors">全部行业<small>每一块下面有什么</small></button><button data-page="projects">全部项目<small>搜索和筛选</small></button><button data-page="method">怎么统计<small>热度和公司标准</small></button></nav></aside>
-<main class="main">
-<div id="trends" class="page active"><div class="intro"><span class="kick">先看具体结论</span><h1>WAIC里具体什么产品多，机器人具体在做什么</h1><p>热度先看有多少家公司展出相似产品，再看这些产品完成什么任务。项目多只代表WAIC展示集中，不代表收入和市场份额</p></div><div id="themeTabs" class="tabs"></div><div id="themeContent"></div></div>
-<div id="embodied" class="page"><div class="intro"><span class="kick">具身智能继续拆</span><h1>机器人形态只回答长什么样，任务才能回答它有没有进入真实工作</h1><p>这里把整机和部件分开，再把人形机器人按任务重新统计</p></div><div class="taskCall"><span class="kick">最具体的结论</span><h2>人形机器人当前最多的是本体动作和科研展示，工厂装配是数量最多的生产任务</h2><p>22组人形机器人中，8组用于动作、科研和展示，4组用于工厂装配，3组用于家庭教育，3组用于接待，仓储和特种作业各有2组</p></div><section class="block"><div class="blockHead"><span class="kick">具体任务</span><h2>每一类都能查看具体项目</h2></div><div class="toggle"><button data-taskmode="human" class="active">只看人形机器人</button><button data-taskmode="all">全部机器人整机</button></div><div id="taskList" class="tasks"></div></section></div>
-<div id="sectors" class="page"><div class="intro"><span class="kick">全部行业</span><h1>每个大板块都可以继续拆到具体产品和项目</h1><p>先选一级行业，再选里面的业务板块。三级产品会说明具体是什么，并列出相关项目</p></div><div id="sectorBtns" class="sectorBtns"></div><div id="sectorContent"></div></div>
-<div id="projects" class="page"><div class="intro"><span class="kick">全部项目</span><h1>搜索公司、产品名称或具体任务</h1><p>同一家公司重复展出的同类产品已经放在一起，1432个原始项目仍然全部保留</p></div><div class="filters"><label><span>搜索</span><input id="q" placeholder="输入公司、产品或任务"></label><label><span>一级行业</span><select id="f1"></select></label><label><span>二级行业</span><select id="f2"></select></label><label><span>具体产品</span><select id="f3"></select></label></div><div id="result" class="result"></div><div id="cards" class="cards"></div><div class="pager"><button id="prev">上一页</button><span id="pageNo"></span><button id="next">下一页</button></div></div>
-<div id="method" class="page"><div class="intro"><span class="kick">怎么统计</span><h1>项目热度、代表公司和发展方向使用三套不同标准</h1><p>项目多只能说明WAIC展示集中。代表公司需要有规模、用户或客户、销售和部署记录</p></div><div class="method"><article><span>01</span><div><h2>所有项目都保留</h2><p>官方目录共有1435行。删除3条完全重复记录后，页面保留1432个项目，没有抽样</p></div></article><article><span>02</span><div><h2>同一家公司重复展出的同类产品放在一起</h2><p>热度使用962组不同产品。同一家公司在同一细分产品下展出多个型号，只计算一组</p></div></article><article><span>03</span><div><h2>代表公司每个板块最多三家</h2><p>入选公司需要在公司体量、用户或客户规模、销售和部署记录中有至少两项公开依据</p></div></article></div></div>
-</main><div id="shade" class="shade"></div><aside id="drawer" class="drawer"><button id="close" class="close">关闭</button><div id="drawerBody"></div></aside>
-<script>const DATA=${safeData};const THEMES=${safeThemes};
-const $=s=>document.querySelector(s),all=s=>[...document.querySelectorAll(s)],esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const fam=id=>DATA.families.find(x=>x.id===id);const company=n=>DATA.importantCompanies.find(x=>x.company===n);
-function openDrawer(html){$("#drawerBody").innerHTML=html;$("#shade").classList.add("open");$("#drawer").classList.add("open")}
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WAIC 2026 AI项目全量拆解</title>
+  <style>${css}
+  .static-page{display:none}.static-page.active{display:block}.static-page>section{margin-top:38px}
+  .side nav button span{display:grid}.side nav button small{display:block}
+  .static-action{cursor:pointer}.raw-switch{margin-bottom:0}
+  @media(max-width:850px){.side{transform:none;position:relative;width:100%;height:auto;padding:22px}.side nav{grid-template-columns:repeat(4,minmax(0,1fr));padding:18px 0 0}.side-note{display:none}.content-shell{margin-left:0;padding-top:30px}.mobile-menu{display:none}.site-brand{padding-bottom:16px}}
+  @media(max-width:620px){.side nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  </style>
+</head>
+<body>
+<div class="site-shell">
+  <aside class="side">
+    <div class="site-brand"><small>WAIC 2026</small><b>AI项目全量拆解</b><span>行业、产品、任务、项目和公司</span></div>
+    <nav>
+      <button class="active" data-page="overview"><i>01</i><span><b>全量判断</b><small>先比较全部20个行业</small></span></button>
+      <button data-page="drilldown"><i>02</i><span><b>逐层拆解</b><small>每个行业用同一套字段</small></span></button>
+      <button data-page="projects"><i>03</i><span><b>全部项目</b><small>搜索、筛选和查看原文</small></span></button>
+      <button data-page="method"><i>04</i><span><b>统计说明</b><small>去重、热度和公司标准</small></span></button>
+    </nav>
+    <div class="side-note"><span>完整数据范围</span><b>1,432个WAIC项目</b><small>全部保留。页面把同一家公司在同一三级方向下的重复展品合并成962组产品。</small></div>
+  </aside>
+  <main class="content-shell">
+    <div id="overview" class="static-page active"></div>
+    <div id="drilldown" class="static-page"></div>
+    <div id="projects" class="static-page"></div>
+    <div id="method" class="static-page"></div>
+    <footer><span>数据来自WAIC 2026官方项目目录</span><a href="${data.metadata.officialPage}" target="_blank" rel="noreferrer">打开官方目录</a></footer>
+  </main>
+</div>
+<button id="shade" aria-label="关闭详情" class="drawer-shade"></button>
+<aside id="drawer" class="detail-drawer"><button id="drawerClose" class="drawer-close">关闭</button><div id="drawerBody"></div></aside>
+<script>
+const DATA=${safeData};
+const $=s=>document.querySelector(s), all=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=n=>new Intl.NumberFormat("zh-CN").format(n), pct=n=>(n*100).toFixed(1)+"%";
+const fam=id=>DATA.families.find(x=>x.id===id), uniq=xs=>[...new Set(xs)];
+const match=(row,m)=>(!m.l1||m.l1.includes(row.l1))&&(!m.l2||m.l2.includes(row.l2))&&(!m.l3||m.l3.includes(row.l3));
+let selectedSector="核心技术", selectedL2="", projectRaw=false, projectPage=1;
+
+function intro(kicker,title,text){return '<header class="page-intro"><span>'+esc(kicker)+'</span><h1>'+esc(title)+'</h1><p>'+esc(text)+'</p></header>'}
+function openDrawer(content){$("#drawerBody").innerHTML=content;$("#shade").classList.add("open");$("#drawer").classList.add("open");bindActions($("#drawer"))}
 function closeDrawer(){$("#shade").classList.remove("open");$("#drawer").classList.remove("open")}
-$("#shade").onclick=closeDrawer;$("#close").onclick=closeDrawer;
-function showFamily(id){const f=fam(id),ps=DATA.projects.filter(x=>x.familyId===id);openDrawer(\`<h2>\${esc(f.representativeProject)}</h2><p class="drawerIntro">\${esc(f.enterprise)}<br>\${esc(f.l1)}，\${esc(f.l2)}，\${esc(f.l3)}</p>\${f.task?\`<div class="taskCall"><span class="kick">它完成的任务</span><h3>\${esc(f.task)}</h3><p>\${esc(f.taskDirection)}</p></div>\`:""}<section class="block"><div class="blockHead"><h2>项目在做什么</h2><p>\${esc(f.description||"项目简介没有填写")}</p></div>\${ps.map(p=>\`<article class="raw"><div><b>\${esc(p.name)}</b><span>\${esc(p.booth||"展位未填写")}</span></div><p>\${esc(p.description||"")}</p><small>分类依据：\${esc(p.basis)}</small></article>\`).join("")}</section>\`)}
-function showFamilies(title,text,rows){openDrawer(\`<h2>\${esc(title)}</h2><p class="drawerIntro">\${esc(text)}</p><div class="drawerList">\${rows.sort((a,b)=>b.projectCount-a.projectCount).map(f=>\`<button data-family="\${f.id}"><span><b>\${esc(f.representativeProject)}</b><small>\${esc(f.enterprise)}</small></span><strong>\${f.projectCount}条</strong></button>\`).join("")}</div>\`);all("[data-family]").forEach(b=>b.onclick=()=>showFamily(b.dataset.family))}
-function renderTheme(id){const t=THEMES.find(x=>x.id===id),rows=DATA.families.filter(f=>t.scope.includes(f.l1));all("#themeTabs button").forEach(b=>b.classList.toggle("active",b.dataset.theme===id));$("#themeContent").innerHTML=\`<div class="answer"><div><span class="kick">\${esc(t.name)}</span><h2>\${esc(t.title)}</h2><p>\${esc(t.text)}</p></div><div class="total"><b>\${rows.length}</b><span>组不同产品</span></div></div><section class="block"><div class="blockHead"><span class="kick">继续往下拆</span><h2>这个板块里数量最多的具体产品</h2></div><div class="signals">\${t.signals.map(s=>{const r=DATA.families.filter(f=>f.l3===s[1]);return \`<button data-l3="\${esc(s[1])}" data-label="\${esc(s[0])}" data-text="\${esc(s[2])}"><span><b>\${esc(s[0])}</b><small>\${esc(s[2])}</small></span><strong>\${r.length}</strong><em>查看项目</em></button>\`}).join("")}</div></section><section class="block two"><div><div class="blockHead"><span class="kick">发展方向</span><h2>接下来主要解决什么问题</h2></div><div class="directions">\${t.directions.map((x,i)=>\`<article><h3>\${i+1}. \${esc(x)}</h3></article>\`).join("")}</div></div><div><div class="blockHead"><span class="kick">代表公司</span><h2>每个板块最多三家</h2><p>公司体量、用户或客户、销售和部署记录是入选依据</p></div><div class="companies">\${t.companies.map((n,i)=>{const c=company(n);if(!c)return"";const p=c.familyIds.map(fam).find(f=>f&&t.scope.includes(f.l1));return \`<article class="company"><span>0\${i+1} 本板块代表公司</span><h3>\${esc(c.company)}</h3><dl><div><dt>公司规模</dt><dd>\${esc(c.scale)}</dd></div><div><dt>用户客户</dt><dd>\${esc(c.users)}</dd></div><div><dt>已有业务</dt><dd>\${esc(c.loop)}</dd></div></dl>\${p?\`<button data-family="\${p.id}">WAIC项目　\${esc(p.representativeProject)}</button>\`:""}</article>\`}).join("")}</div></div></section>\`;all("#themeContent [data-l3]").forEach(b=>b.onclick=()=>showFamilies(b.dataset.label,b.dataset.text,DATA.families.filter(f=>f.l3===b.dataset.l3)));all("#themeContent [data-family]").forEach(b=>b.onclick=()=>showFamily(b.dataset.family))}
-$("#themeTabs").innerHTML=THEMES.map(t=>\`<button data-theme="\${t.id}">\${esc(t.name)}</button>\`).join("");all("#themeTabs button").forEach(b=>b.onclick=()=>renderTheme(b.dataset.theme));renderTheme("embodied");
-let taskMode="human";function renderTasks(){const rows=taskMode==="human"?DATA.embodied.humanoidTasks:DATA.embodied.tasks;$("#taskList").innerHTML=rows.map(t=>\`<button data-task="\${esc(t.name)}"><span><b>\${esc(t.name)}</b><small>\${t.examples.slice(0,3).map(x=>esc(x.enterprise+" "+x.project)).join("；")}</small></span><strong>\${t.familyCount}</strong></button>\`).join("");all("#taskList button").forEach(b=>b.onclick=()=>{const t=rows.find(x=>x.name===b.dataset.task);showFamilies(t.name,t.direction,t.familyIds.map(fam).filter(Boolean))})}all("[data-taskmode]").forEach(b=>b.onclick=()=>{taskMode=b.dataset.taskmode;all("[data-taskmode]").forEach(x=>x.classList.toggle("active",x===b));renderTasks()});renderTasks();
-let sector=DATA.sectors[0],l2=sector.l2[0];function renderSectorBtns(){$("#sectorBtns").innerHTML=DATA.sectors.map(s=>\`<button data-sector="\${esc(s.name)}" class="\${s.name===sector.name?"active":""}">\${esc(s.name)} \${s.familyCount}</button>\`).join("");all("#sectorBtns button").forEach(b=>b.onclick=()=>{sector=DATA.sectors.find(s=>s.name===b.dataset.sector);l2=sector.l2[0];renderSectorBtns();renderSector()})}function renderSector(){$("#sectorContent").innerHTML=\`<div class="sectorHero"><div><span class="kick">一级行业</span><h2>\${esc(sector.name)}</h2><p>\${esc(sector.definition)}</p></div><div class="total"><b>\${sector.familyCount}</b><span>组不同产品</span></div></div><section class="block"><div class="blockHead"><span class="kick">里面有哪些业务</span><h2>二级分类</h2></div><div class="l2s">\${sector.l2.map(x=>\`<button data-l2="\${esc(x.name)}" class="\${x.name===l2.name?"active":""}"><div><b>\${esc(x.name)}</b><strong>\${x.familyCount}</strong></div><p>\${esc(x.definition)}</p></button>\`).join("")}</div></section><section class="block"><div class="blockHead"><span class="kick">再往下是什么产品</span><h2>\${esc(l2.name)}</h2></div><div class="l3s">\${l2.l3.map(x=>\`<button data-l3="\${esc(x.name)}"><span><b>\${esc(x.name)}</b><small>\${esc(x.definition)}</small></span><strong>\${x.familyCount}</strong><em>查看项目</em></button>\`).join("")}</div></section>\`;all("[data-l2]").forEach(b=>b.onclick=()=>{l2=sector.l2.find(x=>x.name===b.dataset.l2);renderSector()});all("#sectorContent [data-l3]").forEach(b=>b.onclick=()=>{const x=l2.l3.find(y=>y.name===b.dataset.l3);showFamilies(x.name,x.definition,DATA.families.filter(f=>f.l1===x.l1&&f.l2===x.l2&&f.l3===x.name))})}renderSectorBtns();renderSector();
-let p=1;const size=30;function fillSelect(el,items){el.innerHTML='<option value="">全部</option>'+items.map(x=>\`<option>\${esc(x)}</option>\`).join("")}fillSelect($("#f1"),DATA.sectors.map(x=>x.name));function renderFilters(){const f1=$("#f1").value,f2=$("#f2").value;fillSelect($("#f2"),[...new Set(DATA.families.filter(x=>!f1||x.l1===f1).map(x=>x.l2))]);$("#f2").value=f2;fillSelect($("#f3"),[...new Set(DATA.families.filter(x=>(!f1||x.l1===f1)&&(!f2||x.l2===f2)).map(x=>x.l3))])}function renderProjects(){const q=$("#q").value.trim().toLowerCase(),f1=$("#f1").value,f2=$("#f2").value,f3=$("#f3").value;const rows=DATA.families.filter(x=>(!q||(x.representativeProject+" "+x.enterprise+" "+x.description+" "+x.projectNames.join(" ")).toLowerCase().includes(q))&&(!f1||x.l1===f1)&&(!f2||x.l2===f2)&&(!f3||x.l3===f3));const pages=Math.max(1,Math.ceil(rows.length/size));p=Math.min(p,pages);$("#result").textContent=\`找到 \${rows.length} 条\`;$("#cards").innerHTML=rows.slice((p-1)*size,p*size).map(x=>\`<article class="card"><div class="tags"><span>\${esc(x.l1)}</span><span>\${esc(x.l2)}</span><span>\${esc(x.l3)}</span></div><h3>\${esc(x.representativeProject)}</h3><b>\${esc(x.enterprise)}</b><p>\${esc((x.description||"").slice(0,120))}</p><small>\${x.projectCount}条同类展品</small><button data-family="\${x.id}">查看详情</button></article>\`).join("");$("#pageNo").textContent=\`\${p} / \${pages}\`;$("#prev").disabled=p===1;$("#next").disabled=p===pages;$("#prev").onclick=()=>{p--;renderProjects()};$("#next").onclick=()=>{p++;renderProjects()};all("#cards [data-family]").forEach(b=>b.onclick=()=>showFamily(b.dataset.family))}$("#q").oninput=()=>{p=1;renderProjects()};$("#f1").onchange=()=>{p=1;renderFilters();renderProjects()};$("#f2").onchange=()=>{p=1;const f1=$("#f1").value,f2=$("#f2").value;fillSelect($("#f3"),[...new Set(DATA.families.filter(x=>(!f1||x.l1===f1)&&(!f2||x.l2===f2)).map(x=>x.l3))]);renderProjects()};$("#f3").onchange=()=>{p=1;renderProjects()};renderFilters();renderProjects();
-all(".side nav button").forEach(b=>b.onclick=()=>{all(".side nav button").forEach(x=>x.classList.toggle("active",x===b));all(".page").forEach(x=>x.classList.toggle("active",x.id===b.dataset.page));window.scrollTo(0,0)});
-</script></body></html>`;
+$("#shade").onclick=closeDrawer;$("#drawerClose").onclick=closeDrawer;
+
+function showFamily(id){
+  const f=fam(id), ps=DATA.projects.filter(x=>x.familyId===id);
+  openDrawer('<span class="drawer-label">产品组</span><h2>'+esc(f.representativeProject)+'</h2><p class="drawer-intro">'+esc(f.enterprise)+'</p><div class="path-tags drawer-path"><span>'+esc(f.l1)+'</span><span>'+esc(f.l2)+'</span><span>'+esc(f.l3)+'</span></div><div class="fact-grid"><article><span>具体做什么</span><p>'+esc(f.work)+'</p></article><article><span>谁会使用</span><p>'+esc(f.audience)+'</p></article><article><span>WAIC落地线索</span><p>'+esc(f.evidenceStage)+'</p><small>'+esc(f.evidenceStageBasis)+'</small></article>'+(f.task?'<article><span>机器人任务</span><p>'+esc(f.task)+'</p><small>'+esc(f.taskDirection)+'</small></article>':'')+'</div><div class="drawer-section"><h3>项目介绍</h3><p>'+esc(f.description||"WAIC目录没有填写项目简介")+'</p></div><div class="drawer-section"><h3>合并前的原始展品</h3><div class="raw-projects">'+ps.map(p=>'<article><div><b>'+esc(p.name)+'</b><span>'+esc(p.booth||"展位未填写")+'</span></div><p>'+esc(p.description||"没有填写简介")+'</p><small>分类依据：'+esc(p.basis)+'</small></article>').join("")+'</div></div>');
+}
+
+function showMatch(title,explanation,m){
+  const rows=DATA.families.filter(x=>match(x,m));
+  openDrawer('<span class="drawer-label">具体方向</span><h2>'+esc(title)+'</h2><p class="drawer-intro">'+esc(explanation)+'</p><div class="drawer-number"><b>'+rows.length+'</b><span>组合并产品 · '+rows.reduce((s,x)=>s+x.projectCount,0)+'条原始展品</span></div><div class="drawer-section"><h3>全部相关产品组</h3><div class="family-buttons">'+rows.map(x=>'<button data-family="'+x.id+'"><span><b>'+esc(x.representativeProject)+'</b><small>'+esc(x.enterprise)+' · '+esc(x.evidenceStage)+'</small></span><strong>'+x.projectCount+'条</strong></button>').join("")+'</div></div>');
+}
+
+function showTask(name,mode){
+  const list=mode==="humanoid"?DATA.embodied.humanoidTasks:DATA.embodied.tasks, t=list.find(x=>x.name===name), rows=t.familyIds.map(fam).filter(Boolean);
+  openDrawer('<span class="drawer-label">机器人任务</span><h2>'+esc(t.name)+'</h2><p class="drawer-intro">'+esc(t.direction)+'</p><div class="drawer-number"><b>'+t.familyCount+'</b><span>组机器人整机 · '+t.projectCount+'条原始展品</span></div><div class="drawer-section"><h3>完成这个任务的项目</h3><div class="family-buttons">'+rows.map(x=>'<button data-family="'+x.id+'"><span><b>'+esc(x.representativeProject)+'</b><small>'+esc(x.enterprise)+' · '+esc(x.l3)+'</small></span><strong>'+x.projectCount+'条</strong></button>').join("")+'</div></div>');
+}
+
+function renderOverview(){
+  const core=DATA.sectors.find(x=>x.name==="核心技术"), embodied=DATA.sectors.find(x=>x.name==="具身智能"), human=DATA.globalL3.find(x=>x.name==="人形机器人");
+  const topL2=DATA.sectors.flatMap(x=>x.l2).sort((a,b)=>b.familyCount-a.familyCount||b.projectCount-a.projectCount).slice(0,8), topL3=DATA.globalL3.slice(0,15);
+  $("#overview").innerHTML=intro("先做全量比较","WAIC最集中的项目是AI底座和机器人，具体热点要继续看到三级方向","本页先比较全部20个一级行业、89个二级方向和191个三级方向。用户举出的例子只作为待核验问题，最终排序全部来自同一套合并口径。")+
+  '<section class="metric-strip"><article><span>官方项目</span><b>'+fmt(DATA.metadata.uniqueProjects)+'</b><small>一条未少</small></article><article><span>合并后产品组</span><b>'+fmt(DATA.metadata.productFamilies)+'</b><small>用于比较热度</small></article><article><span>三级方向</span><b>'+DATA.metadata.level3Count+'</b><small>继续下钻的最细层</small></article><article><span>参展企业</span><b>'+DATA.metadata.enterprises+'</b><small>标准化名称后</small></article></section>'+
+  '<section class="answer-grid"><article class="primary-answer"><span>全量结论</span><h2>核心技术有'+core.familyCount+'组，具身智能有'+embodied.familyCount+'组，两者合计占全部产品组的'+pct((core.familyCount+embodied.familyCount)/DATA.metadata.productFamilies)+'</h2><p>WAIC展台的项目供给集中在算力、模型、企业软件、机器人整机和机器人部件。这个比例描述展会项目结构，不代表市场收入份额。</p></article><article><span>人形机器人位置</span><h3>22组，排在191个三级方向的第'+human.rank+'位</h3><p>通用具身机器人70组、AI芯片38组、大语言模型29组、机器人关节26组，数量都更高。</p></article><article><span>软件侧集中点</span><h3>企业软件77组，大模型与算法69组</h3><p>办公协同、内容创作、客服营销和软件开发已经形成一批明确产品。</p></article></section>'+
+  '<section><div class="section-title"><span>一级行业</span><h2>全部20个板块按同一口径排名</h2><p>点击任意一行，会进入该行业的二级、三级、实际项目、使用对象和落地线索。</p></div><div class="rank-list sector-rank-list">'+DATA.sectors.map(s=>'<button data-sector="'+esc(s.name)+'"><i>'+String(s.rank).padStart(2,"0")+'</i><span><b>'+esc(s.name)+'</b><small>'+esc(s.l2[0]?.name||"")+'是其中最大的二级方向</small></span><div class="rank-bar"><u style="width:'+Math.max(2,s.familyCount/core.familyCount*100)+'%"></u></div><strong>'+s.familyCount+'</strong><em>组</em></button>').join("")+'</div></section>'+
+  '<section class="split-section"><div><div class="section-title"><span>二级方向</span><h2>项目最多的八个业务板块</h2></div><div class="compact-rank">'+topL2.map((x,i)=>'<button data-match="'+encodeURIComponent(JSON.stringify({l1:[x.l1],l2:[x.name]}))+'" data-title="'+esc(x.name)+'" data-explanation="'+esc(x.definition)+'"><i>'+(i+1)+'</i><span><b>'+esc(x.name)+'</b><small>'+esc(x.l1)+'</small></span><strong>'+x.familyCount+'</strong></button>').join("")+'</div></div><div><div class="section-title"><span>整体方向</span><h2>展品正在沿三条路径形成产品</h2></div><div class="direction-list"><article><i>1</i><div><h3>算力从单个芯片扩展到整套系统</h3><p>芯片38组，服务器24组，互联23组，液冷21组，智算集群19组，供应链各环节都有集中项目。</p></div></article><article><i>2</i><div><h3>机器人同步补整机、关节、感知和操作</h3><p>通用具身整机70组，关节26组，传感器20组，灵巧手16组。人形机器人是整机形态中的一个三级方向。</p></div></article><article><i>3</i><div><h3>企业软件开始承接固定工作</h3><p>办公协同17组、内容创作19组、客服营销12组、软件开发10组，产品逐渐连接企业已有数据和流程。</p></div></article></div></div></section>'+
+  '<section><div class="section-title"><span>三级方向</span><h2>191个具体方向中，前15名是什么</h2><p>每一行都可以打开实际项目。排序看合并后的产品组数量。</p></div><div class="rank-list l3-global-list">'+topL3.map(x=>'<button data-match="'+encodeURIComponent(JSON.stringify({l1:[x.l1],l2:[x.l2],l3:[x.name]}))+'" data-title="'+esc(x.name)+'" data-explanation="'+esc(x.work)+'"><i>'+String(x.rank).padStart(2,"0")+'</i><span><b>'+esc(x.name)+'</b><small>'+esc(x.work)+'</small></span><u>'+esc(x.l1)+'</u><strong>'+x.familyCount+'</strong><em>查看项目</em></button>').join("")+'</div></section>';
+  bindActions($("#overview"));
+}
+
+function companyCard(c,i){
+  const p=c.familyIds.map(fam).find(Boolean);
+  return '<article class="company-card"><div><i>'+String(i+1).padStart(2,"0")+'</i><span>证据评分 '+c.totalScore+'/6</span></div><h3>'+esc(c.company)+'</h3><dl><div><dt>公司体量</dt><dd>'+esc(c.scale)+'</dd></div><div><dt>用户或客户</dt><dd>'+esc(c.users)+'</dd></div><div><dt>业务闭环</dt><dd>'+esc(c.loop)+'</dd></div></dl>'+(p?'<button data-family="'+p.id+'"><span>WAIC项目</span><b>'+esc(p.representativeProject)+'</b></button>':'')+'<footer>'+c.sourceUrls.slice(0,2).map((u,j)=>'<a href="'+esc(u)+'" target="_blank">公司依据'+(c.sourceUrls.length>1?j+1:"")+'</a>').join("")+'</footer></article>';
+}
+
+function robotTasks(mode="all"){
+  const tasks=mode==="humanoid"?DATA.embodied.humanoidTasks:DATA.embodied.tasks;
+  return '<section id="robotTasks"><div class="section-title"><span>整机再按任务拆</span><h2>机器人长什么样和它做什么工作分开统计</h2><p>这一步只用于机器人整机。部件、软件和模型不会被算成已经完成任务的机器人。</p></div><div class="task-toggle"><button data-task-mode="all" class="'+(mode==="all"?'active':'')+'">全部机器人整机</button><button data-task-mode="humanoid" class="'+(mode==="humanoid"?'active':'')+'">只看人形机器人</button></div><div class="task-list">'+tasks.map((t,i)=>'<button data-task="'+esc(t.name)+'" data-mode="'+mode+'"><i>'+String(i+1).padStart(2,"0")+'</i><span><b>'+esc(t.name)+'</b><small>'+t.examples.slice(0,3).map(x=>esc(x.enterprise+' · '+x.project)).join('；')+'</small></span><strong>'+t.familyCount+'</strong><em>组</em></button>').join("")+'</div></section>';
+}
+
+function renderDrilldown(){
+  const sector=DATA.sectors.find(x=>x.name===selectedSector)||DATA.sectors[0];
+  if(!selectedL2||!sector.l2.some(x=>x.name===selectedL2))selectedL2=sector.l2[0]?.name||"";
+  const l2=sector.l2.find(x=>x.name===selectedL2)||sector.l2[0];
+  const topL3=sector.l2.flatMap(x=>x.l3).sort((a,b)=>b.familyCount-a.familyCount||b.projectCount-a.projectCount)[0];
+  const examples=uniq((l2?.l3||[]).flatMap(x=>x.exampleFamilyIds)).slice(0,6).map(fam).filter(Boolean);
+  const companies=sector.importantCompanyKeys.map(k=>DATA.importantCompanies.find(x=>x.key===k)).filter(Boolean);
+  $("#drilldown").innerHTML=intro("所有行业使用同一套拆法","先看大板块，再看具体产品、工作、使用对象和实际项目","选择任何一级行业，页面都会继续拆到二级和三级。机器人整机额外按任务重算，因为人形、四足、轮式只说明外形，无法说明它实际完成什么工作。")+
+  '<section class="sector-picker">'+DATA.sectors.map(x=>'<button data-sector="'+esc(x.name)+'" class="'+(x.name===sector.name?'active':'')+'"><span>'+esc(x.name)+'</span><b>'+x.familyCount+'</b></button>').join("")+'</section>'+
+  '<section class="sector-summary"><div><span>第'+sector.rank+'位 · 一级行业</span><h2>'+esc(sector.name)+'</h2><p>'+esc(sector.definition)+'</p></div><div><b>'+sector.familyCount+'</b><span>组不同产品</span><small>'+sector.enterpriseCount+'家公司 · '+sector.projectCount+'条原始项目</small></div></section>'+
+  '<section class="plain-answer"><span>这个板块具体热在哪里</span><h2>'+esc(sector.l2[0]?.name||"")+'是最大的二级方向，有'+(sector.l2[0]?.familyCount||0)+'组；继续下钻后，'+esc(topL3?.name||"")+'最多，有'+(topL3?.familyCount||0)+'组</h2><p>'+esc(topL3?.work||"")+'。主要面向'+esc(topL3?.audience||"")+'。</p></section>'+
+  '<section><div class="section-title"><span>第一层下钻</span><h2>'+esc(sector.name)+'下面有哪些二级业务</h2></div><div class="l2-list">'+sector.l2.map(x=>'<button data-l2="'+esc(x.name)+'" class="'+(x.name===l2.name?'active':'')+'"><div><b>'+esc(x.name)+'</b><strong>'+x.familyCount+'</strong></div><p>'+esc(x.definition)+'</p><small>'+x.l3.length+'个三级方向</small></button>').join("")+'</div></section>'+
+  '<section><div class="section-title"><span>第二层下钻</span><h2>'+esc(l2.name)+'具体在做什么</h2><p>落地线索只读取WAIC项目自述中的量产、交付、试点、研发等关键词，不替代外部尽调。</p></div><div class="deep-list">'+l2.l3.map((x,i)=>'<button data-match="'+encodeURIComponent(JSON.stringify({l1:[x.l1],l2:[x.l2],l3:[x.name]}))+'" data-title="'+esc(x.name)+'" data-explanation="'+esc(x.work)+'"><i>'+String(i+1).padStart(2,"0")+'</i><div><b>'+esc(x.name)+'</b><p>'+esc(x.work)+'</p><small>使用对象：'+esc(x.audience)+'</small></div><aside><span>'+esc(x.evidenceStages[0]?.name||"产品说明")+'</span><small>'+(x.evidenceStages[0]?.count||x.familyCount)+'/'+x.familyCount+'组</small></aside><strong>'+x.familyCount+'</strong><em>查看项目</em></button>').join("")+'</div></section>'+
+  (sector.name==="具身智能"&&l2.name==="机器人整机"?robotTasks("all"):"")+
+  '<section class="split-section"><div><div class="section-title"><span>实际项目</span><h2>'+esc(l2.name)+'里的代表性展品</h2><p>优先显示有重要公司依据、合并项目较多或说明较完整的产品，点击后可看原始项目。</p></div><div class="example-list">'+examples.map(x=>'<button data-family="'+x.id+'"><span>'+esc(x.l3)+'</span><h3>'+esc(x.representativeProject)+'</h3><p>'+esc(x.enterprise)+'</p><small>'+esc(x.evidenceStage)+' · '+(x.projectCount>1?x.projectCount+'条同类展品已合并':'1条WAIC展品')+'</small></button>').join("")+'</div></div><div><div class="section-title"><span>发展方向</span><h2>'+esc(sector.name)+'正在往哪里走</h2></div><div class="direction-list"><article><i>1</i><div><h3>产品方向</h3><p>'+esc(sector.direction)+'</p></div></article><article><i>2</i><div><h3>当前落地状态</h3><p>'+esc(sector.maturity)+'</p></div></article><article><i>3</i><div><h3>阅读边界</h3><p>'+esc(sector.caveat)+'</p></div></article></div></div></section>'+
+  '<section><div class="section-title"><span>代表公司</span><h2>'+(companies.length?esc(sector.name)+'只列证据排名靠前的'+companies.length+'家公司':esc(sector.name)+'暂未选代表公司')+'</h2><p>入选依据是公司体量、用户或客户规模、已经形成的交付闭环。WAIC展品数量不参与公司重要性评分。</p></div>'+(companies.length?'<div class="company-grid">'+companies.map(companyCard).join("")+'</div>':'<div class="empty-note">现有公开证据不足，页面保留全部项目，不随机挑选公司填满版面。</div>')+'</section>';
+  bindActions($("#drilldown"));
+}
+
+function renderProjects(){
+  const root=$("#projects"), oldQ=$("#q")?.value||"", oldL1=$("#f1")?.value||"", oldL2=$("#f2")?.value||"", oldL3=$("#f3")?.value||"";
+  const rows=projectRaw?DATA.projects:DATA.families;
+  const l2s=uniq(rows.filter(x=>!oldL1||x.l1===oldL1).map(x=>x.l2)).sort(), l3s=uniq(rows.filter(x=>(!oldL1||x.l1===oldL1)&&(!oldL2||x.l2===oldL2)).map(x=>x.l3)).sort();
+  const filtered=rows.filter(x=>{const name=x.name||x.representativeProject,text=(name+' '+x.enterprise+' '+x.description+' '+x.l1+' '+x.l2+' '+x.l3).toLowerCase();return(!oldQ||text.includes(oldQ.toLowerCase()))&&(!oldL1||x.l1===oldL1)&&(!oldL2||x.l2===oldL2)&&(!oldL3||x.l3===oldL3)});
+  const size=30,pages=Math.max(1,Math.ceil(filtered.length/size));projectPage=Math.min(projectPage,pages);const pageRows=filtered.slice((projectPage-1)*size,projectPage*size);
+  root.innerHTML=intro("完整项目库","1432条原始项目全部可查，962组合并产品用于看趋势","可以搜索公司、产品和简介，也可以按一级、二级、三级行业筛选。合并视图保留原始项目，点开产品组就能看到里面每一条展品。")+
+  '<section class="project-controls"><div class="view-switch raw-switch"><button data-raw="0" class="'+(!projectRaw?'active':'')+'">合并产品组</button><button data-raw="1" class="'+(projectRaw?'active':'')+'">原始1432条</button></div><label class="search"><span>搜索</span><input id="q" value="'+esc(oldQ)+'" placeholder="公司、产品或简介"></label><label><span>一级行业</span><select id="f1"><option value="">全部</option>'+DATA.sectors.map(x=>'<option '+(x.name===oldL1?'selected':'')+'>'+esc(x.name)+'</option>').join("")+'</select></label><label><span>二级方向</span><select id="f2"><option value="">全部</option>'+l2s.map(x=>'<option '+(x===oldL2?'selected':'')+'>'+esc(x)+'</option>').join("")+'</select></label><label><span>三级方向</span><select id="f3"><option value="">全部</option>'+l3s.map(x=>'<option '+(x===oldL3?'selected':'')+'>'+esc(x)+'</option>').join("")+'</select></label></section><p class="result-count">找到 <b>'+fmt(filtered.length)+'</b> '+(projectRaw?'条原始项目':'组产品')+'</p><section class="project-grid">'+pageRows.map(x=>{const f=x.representativeProject?x:fam(x.familyId),name=x.name||x.representativeProject;return '<article><div class="path-tags"><span>'+esc(x.l1)+'</span><span>'+esc(x.l2)+'</span><span>'+esc(x.l3)+'</span></div><h3>'+esc(name)+'</h3><b>'+esc(x.enterprise)+'</b><p>'+esc((x.description||"").slice(0,120))+(x.description?.length>120?'…':'')+'</p><small>'+(projectRaw?'展位 '+esc(x.booth||"未填写"):esc(x.evidenceStage)+' · '+x.projectCount+'条原始展品')+'</small><button data-family="'+f.id+'">查看完整信息</button></article>'}).join("")+'</section><div class="pagination"><button id="prev" '+(projectPage===1?'disabled':'')+'>上一页</button><span>'+projectPage+' / '+pages+'</span><button id="next" '+(projectPage===pages?'disabled':'')+'>下一页</button></div>';
+  bindActions(root);
+  $("#q").oninput=()=>{projectPage=1;renderProjects()};
+  $("#f1").onchange=()=>{projectPage=1;$("#f2").value="";$("#f3").value="";renderProjects()};
+  $("#f2").onchange=()=>{projectPage=1;$("#f3").value="";renderProjects()};
+  $("#f3").onchange=()=>{projectPage=1;renderProjects()};
+  $("#prev").onclick=()=>{projectPage--;renderProjects()};$("#next").onclick=()=>{projectPage++;renderProjects()};
+}
+
+function renderMethod(){
+  $("#method").innerHTML=intro("统计说明","每个结论都能回到同一套数据和规则","本页解释完整性、去重、行业拆解、落地线索和代表公司怎么处理。")+'<section class="method-list"><article><span>01</span><div><h2>项目范围包含官方目录中的全部'+fmt(DATA.metadata.uniqueProjects)+'条项目</h2><p>原始项目全部留在查询页，并保留项目名称、企业、展位、简介和官方行业标签。</p></div></article><article><span>02</span><div><h2>重复展品只在趋势统计时合并</h2><p>'+esc(DATA.metadata.aggregationRule)+'。这样可以避免同一家公司用多个型号把某个方向的热度抬高。</p></div></article><article><span>03</span><div><h2>20个一级行业都继续拆到二级、三级和实际项目</h2><p>所有行业共用“是什么、做什么工作、谁使用、项目有哪些、WAIC材料出现什么落地词”的字段。用户举例不改变排名。</p></div></article><article><span>04</span><div><h2>热度表示WAIC展品集中度</h2><p>一级、二级、三级排名都使用合并后的产品组数量。它适合回答展会上哪类供给最集中，无法直接替代收入、出货量、市场份额和融资规模。</p></div></article><article><span>05</span><div><h2>落地线索只读取项目自述</h2><p>页面把量产、交付、试点、科研等词分组显示，帮助区分项目介绍写到了哪一步。这些内容没有被当成外部核验后的成熟度结论。</p></div></article><article><span>06</span><div><h2>代表公司最多保留三家</h2><p>公司体量、用户或客户规模、销售或部署闭环各按0至2分评分。只有证据较完整的公司才展示；样本或证据不足的板块保持空缺。</p></div></article></section>';
+}
+
+function bindActions(root=document){
+  root.querySelectorAll('[data-family]').forEach(b=>b.onclick=()=>showFamily(b.dataset.family));
+  root.querySelectorAll('[data-match]').forEach(b=>b.onclick=()=>showMatch(b.dataset.title,b.dataset.explanation,JSON.parse(decodeURIComponent(b.dataset.match))));
+  root.querySelectorAll('[data-sector]').forEach(b=>b.onclick=()=>{selectedSector=b.dataset.sector;selectedL2="";showPage("drilldown")});
+  root.querySelectorAll('[data-l2]').forEach(b=>b.onclick=()=>{selectedL2=b.dataset.l2;renderDrilldown()});
+  root.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>showTask(b.dataset.task,b.dataset.mode));
+  root.querySelectorAll('[data-task-mode]').forEach(b=>b.onclick=()=>{const holder=$("#robotTasks");holder.outerHTML=robotTasks(b.dataset.taskMode);bindActions($("#drilldown"))});
+  root.querySelectorAll('[data-raw]').forEach(b=>b.onclick=()=>{projectRaw=b.dataset.raw==="1";projectPage=1;renderProjects()});
+}
+
+function showPage(id){
+  all('.static-page').forEach(x=>x.classList.toggle('active',x.id===id));
+  all('.side nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));
+  if(id==='drilldown')renderDrilldown();if(id==='projects')renderProjects();
+  window.scrollTo(0,0);
+}
+all('.side nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+renderOverview();renderDrilldown();renderProjects();renderMethod();
+</script>
+</body>
+</html>`;
 
 await fs.mkdir(path.dirname(output), { recursive: true });
 await fs.writeFile(output, html, "utf8");

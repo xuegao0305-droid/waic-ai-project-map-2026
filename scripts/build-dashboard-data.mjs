@@ -108,6 +108,136 @@ const embodiedL3Definitions = {
   "陪伴穿戴与情感交互": "通过穿戴设备或陪伴硬件提供情绪识别、对话和持续互动",
 };
 
+const audienceByL1 = {
+  "核心技术": "模型公司、开发者、云厂商和需要自建AI能力的企业",
+  "具身智能": "工厂、仓库、商业服务场所、科研机构和机器人集成商",
+  "智能终端": "个人消费者、办公人员、门店和行业现场人员",
+  "工业互联与智能制造": "工厂的生产、设备、质量和信息化团队",
+  "制造业": "制造企业、自动化设备商和产线集成商",
+  "智慧医疗": "医院、医生、检验机构、患者和养老康复机构",
+  "其他": "需要按具体产品继续判断，不能把这一兜底类当成同一批用户",
+  "人才与教育": "学生、教师、学校、培训机构和企业学习部门",
+  "文娱艺术与元宇宙": "内容创作者、游戏与直播平台、品牌和消费者",
+  "金融科技": "银行、券商、资管机构、企业财务团队和金融消费者",
+  "智慧城市": "政府、园区、楼宇运营方和公共设施管理单位",
+  "智能驾驶": "车企、自动驾驶运营商、物流企业和车内用户",
+  "电力、热力、燃气及水生产和供应业": "电网、能源企业、调度中心和设备运维团队",
+  "租赁业与商业服务业": "企业采购、销售、经营管理和专业服务团队",
+  "交通运输、仓储和邮政业": "物流企业、供应链团队和出行平台",
+  "房地产业": "住房运营商、物业公司、租户和业主",
+  "农、林、牧、渔业": "农业企业、合作社、种植户和植保服务商",
+  "政府/机构": "政务、法院、检察和公共服务人员",
+  "建筑业": "施工单位、项目管理团队和质量安全人员",
+  "伦理治理": "AI产品团队、合规部门、审计机构和监管相关单位",
+};
+
+const audienceRules = [
+  { pattern: /算力|芯片|服务器|存储|互联|数据中心|液冷|云平台/, text: "模型公司、云厂商、数据中心和需要部署算力的企业" },
+  { pattern: /模型|算法|训练|微调|推理|开发平台|MLOps|LLMOps/, text: "AI开发者、算法团队和把模型接入业务的企业" },
+  { pattern: /办公|协同|经营|决策|客服|营销|招投标|ERP|MES|PLM/, text: "企业管理、销售、客服、研发和运营团队" },
+  { pattern: /关节|传动|电机|传感器|灵巧手|夹爪|机械臂|结构件|功能总成/, text: "机器人整机厂、自动化设备商和集成商" },
+  { pattern: /健康|医疗|临床|医生|病理|影像|康复|养老|照护|中医|脑机/, text: "医院、医生、患者、健康管理和康复养老机构" },
+  { pattern: /课堂|教学|教师|学生|学习|教育|实训|面试/, text: "学生、教师、学校、培训机构和企业学习部门" },
+  { pattern: /投研|理财|银行|金融|风控|支付|资金/, text: "银行、券商、资管机构、企业财务团队和金融消费者" },
+  { pattern: /工厂|工业|生产|装配|质量|缺陷|PLC|数控|加工/, text: "工厂的生产、设备、质量和自动化团队" },
+  { pattern: /城市|园区|楼宇|设施|公共安全|应急/, text: "政府、园区、楼宇和公共设施运营单位" },
+  { pattern: /驾驶|座舱|车辆|车载|Robotaxi|导航/, text: "车企、自动驾驶运营商、物流企业和车内用户" },
+  { pattern: /电力|电网|能源|能碳|除冰/, text: "电网、能源企业、调度中心和设备运维团队" },
+];
+
+function audienceForCategory(l1, l2, l3) {
+  const text = `${l2} ${l3}`;
+  return audienceRules.find((rule) => rule.pattern.test(text))?.text || audienceByL1[l1] || "需要结合具体项目判断使用者";
+}
+
+const workOverrides = {
+  "通用具身机器人": "让一台机器人在不同场景里移动、抓取和更换任务，重点验证是否真的能跨任务复用",
+  "人形机器人": "用接近人的身体进入现有工位，完成行走、搬运、装配、接待或科研开发",
+  "AI芯片与加速卡": "加速大模型训练和推理，降低每次计算的时间、能耗和成本",
+  "大语言模型": "理解和生成文字、代码与知识问答，并作为应用和智能体的基础模型",
+  "关节与传动部件": "把电机动力稳定传给机器人关节，决定负载、精度、速度和寿命",
+  "服务器与算力一体机": "把芯片、内存、存储和网络装成可直接部署模型的计算设备",
+  "存储与高速互联": "让多张卡和多台服务器更快交换数据，减少训练和推理等待",
+  "数据中心与液冷": "给高密度算力供电和散热，让更多芯片能长时间稳定运行",
+  "传感器与感知器件": "采集视觉、触觉、力觉和位置数据，让机器人知道周围和手上发生了什么",
+  "内容创作与数字人": "生成文字、图片、视频或数字人内容，缩短制作和运营时间",
+  "智算中心与计算集群": "把大量服务器组成统一算力池，并完成资源调度、监控和运维",
+  "办公与协同智能体": "在文档、会议、邮件和组织知识中查找信息并执行办公流程",
+  "灵巧手与夹爪": "完成抓、拿、拧、按和精细操作，重点处理不同形状和力度的物体",
+  "四足与仿生机器人": "通过楼梯、坡地和复杂地形，承担巡检、应急和户外作业",
+  "AI眼镜与AR终端": "在视野内完成翻译、提词、记录、拍摄和现场提示",
+  "检验病理与早筛": "读取检验和病理数据，发现异常并辅助疾病早期筛查",
+  "临床决策与医生智能体": "整理病历和医学知识，帮助医生形成诊疗建议并保留审核过程",
+  "医学影像辅助诊断": "识别CT、MRI、超声等影像中的异常区域，辅助医生复核",
+  "工业视觉与质量检测": "用相机识别缺陷、尺寸和装配错误，把判断接入质检流程",
+  "排产工艺与生产优化": "根据订单、设备和工艺约束安排生产，并调整工艺参数",
+  "智能投研与理财": "整理行情、公司和产品数据，生成研究、配置和客户服务建议",
+  "自动驾驶车辆与Robotaxi": "让车辆在限定区域内自主行驶，并完成载客运营和车队调度",
+  "电力大模型与智能体": "读取电网知识和运行数据，辅助规划、调度、检修和故障处置",
+  "法律司法智能体": "检索法律知识、整理案件材料和生成文书，保留人工复核和过程记录",
+  "建筑巡检与缺陷检测": "识别施工现场和建筑表面的缺陷，把问题定位给现场人员处理",
+  "治理工具与合规服务": "记录模型风险、评估结果和责任链条，支持合规检查与追溯",
+};
+
+const workRules = [
+  { pattern: /服务器|工作站|算力一体机|计算集群|智算中心|本地算力/, text: "提供模型训练和推理所需的计算设备，并管理资源、网络和运行状态" },
+  { pattern: /存储|互联|光模块|网络硬件|网卡/, text: "在算力设备之间存放和传输数据，减少多机多卡协作的等待" },
+  { pattern: /模型|算法|多模态|生成式AI|语言技术|计算机视觉/, text: "让软件理解文字、图像或声音，并完成生成、识别、预测或优化" },
+  { pattern: /智能体开发|Agent操作系统|开发平台|应用交付/, text: "帮助开发者连接模型、工具和业务系统，搭建可以执行多步任务的智能体" },
+  { pattern: /推理与部署|训练与微调|MLOps|LLMOps|可观测/, text: "把模型训练、部署、监控和更新做成可重复管理的工程流程" },
+  { pattern: /数据库|湖仓|知识库|检索增强|数据治理|数据服务|可信流通/, text: "整理企业数据和知识，让模型能检索、调用并追踪数据来源" },
+  { pattern: /安全|隐私|合规|治理/, text: "识别数据、网络、内容和模型风险，并记录处置和责任过程" },
+  { pattern: /量子|光计算/, text: "提供新型计算硬件或开发平台，处理传统计算成本较高的问题" },
+  { pattern: /机器人|机械臂|外骨骼/, text: "让机器移动、抓取或辅助人体完成明确的物理任务" },
+  { pattern: /关节|传动|电机|驱动|结构件|连接件|传感器|感知器件|功能总成|灵巧手|夹爪/, text: "提供机器人运动、感知和操作所需的核心部件" },
+  { pattern: /仿真|训练与数据平台/, text: "在虚拟环境和真实采集中训练机器人，降低反复试错成本" },
+  { pattern: /运动控制|导航/, text: "规划路线和动作，让设备保持平衡、避障并到达目标位置" },
+  { pattern: /眼镜|AR|穿戴|耳机|助听/, text: "把语音、视觉、健康或提示能力放到随身设备里持续使用" },
+  { pattern: /电脑|平板|手机|终端|家电|家居|显示|影音|交互设备/, text: "把AI放进个人或商用硬件，完成本地交互、内容处理和设备控制" },
+  { pattern: /会议|翻译|记录/, text: "把现场语音转成翻译、文字记录或会议结果" },
+  { pattern: /工业网络|接口|工控机|边缘计算/, text: "连接工厂设备并在现场处理数据，让控制和判断不必全部回传云端" },
+  { pattern: /PLC|运动控制|数控|工业控制/, text: "控制设备、产线和机械动作，并把生产指令稳定执行到现场" },
+  { pattern: /运维|预测维护|巡检|状态感知|设备管理/, text: "持续监测设备状态，发现故障并安排巡检或维修" },
+  { pattern: /质量|缺陷|检测|测量|数据采集/, text: "采集现场数据并识别质量、尺寸、状态或安全异常" },
+  { pattern: /MES|ERP|PLM|经营管理/, text: "连接订单、设计、生产和经营数据，帮助企业安排和追踪业务流程" },
+  { pattern: /物流|仓储|供应链|无人车/, text: "连接订单、库存、车辆和路线，完成搬运、配送或供应链调度" },
+  { pattern: /病理|早筛|影像|临床|诊疗|监护|给药/, text: "辅助医生发现异常、形成诊疗判断或执行监护和给药" },
+  { pattern: /慢病|生命体征|健康|睡眠/, text: "持续采集身体和行为数据，提供健康提醒、监测和干预" },
+  { pattern: /康复|照护|助行|适老/, text: "帮助患者和老人训练、移动或完成日常照护" },
+  { pattern: /医院系统|医疗数据/, text: "连接医院业务和医疗数据，支持诊疗、运营和信息管理" },
+  { pattern: /学生|学习|课堂|教学|教师|实训|面试|教育/, text: "帮助学生学习、教师备课教学，或完成训练和能力评价" },
+  { pattern: /视频|图像|短片|数字人|虚拟角色|音乐|乐器|游戏|社交|XR|动作捕捉/, text: "生成或驱动内容、角色和互动体验，服务创作、娱乐和平台运营" },
+  { pattern: /投研|理财|银行|金融|风控|支付|资金/, text: "处理金融数据和流程，辅助研究、服务、风控、支付或资金管理" },
+  { pattern: /城市|园区|楼宇|公共安全|应急/, text: "连接城市和园区设备，支持设施管理、巡检、安全和公共服务" },
+  { pattern: /座舱|驾驶|车辆|车载|Robotaxi|导航|定位/, text: "帮助车辆理解环境、规划驾驶、服务乘客或管理运营车队" },
+  { pattern: /电力|电网|能源|能碳|除冰/, text: "预测能源供需、辅助调度，并管理设备运行、安全和能碳数据" },
+  { pattern: /采购|销售|招投标|咨询|经营驾驶舱/, text: "读取企业业务数据，完成采购、销售、投标、咨询或经营分析" },
+  { pattern: /住房|租赁|物业|门锁|门禁/, text: "连接房源、租户、物业流程和门禁设备，支持住房日常运营" },
+  { pattern: /农业|植保/, text: "识别农田状态并安排植保、机器人作业和生产管理" },
+];
+
+function workForCategory(l1, l2, l3) {
+  if (workOverrides[l3]) return workOverrides[l3];
+  const text = `${l2} ${l3}`;
+  return workRules.find((rule) => rule.pattern.test(text))?.text || `提供${l3}产品，处理${l2}中的具体工作`;
+}
+
+const stageRules = [
+  { name: "规模使用线索", keywords: ["量产", "规模化", "大规模", "累计交付", "出货", "覆盖超过", "万家", "万名", "百万", "千万用户"] },
+  { name: "客户交付线索", keywords: ["商用", "已部署", "部署于", "交付", "采购", "正式上线", "投入运营", "落地", "应用于", "已在"] },
+  { name: "试点验证线索", keywords: ["试点", "示范", "验证", "测试", "原型", "首发", "即将", "联合研发"] },
+  { name: "研发教学线索", keywords: ["科研", "教学", "开发套件", "二次开发", "开源", "实验室"] },
+];
+
+function stageForFamily(family) {
+  const text = clean(`${family.projectNames.join(" ")} ${family.records.map((row) => row.productDescriptionCn).join(" ")}`);
+  for (const rule of stageRules) {
+    const keyword = rule.keywords.find((item) => text.includes(item));
+    if (keyword) return { name: rule.name, basis: `WAIC项目介绍出现“${keyword}”` };
+  }
+  return { name: "产品说明", basis: "WAIC项目介绍给出了产品或方案，但没有出现规模、交付或试点关键词" };
+}
+
 const taskRules = [
   {
     name: "工厂装配与生产",
@@ -164,7 +294,7 @@ function scoreTask(text, rule) {
   return rule.keywords.reduce((score, keyword) => score + (text.includes(keyword.toLowerCase()) ? (keyword.length >= 4 ? 3 : 2) : 0), 0);
 }
 
-function taskForFamily(family) {
+function embodiedTaskForFamily(family) {
   if (family.l1 !== "具身智能" || !["机器人整机", "服务机器人与自动化"].includes(family.l2)) return null;
   const text = clean(`${family.l3} ${family.projectNames.join(" ")} ${family.records.map((row) => row.productDescriptionCn).join(" ")}`).toLowerCase();
   const scored = taskRules.map((rule) => ({ ...rule, score: scoreTask(text, rule) })).sort((a, b) => b.score - a.score);
@@ -208,7 +338,8 @@ const l1Order = new Map(ranked(l1FamilyCounts).map(([name], index) => [name, ind
 preFamilies.sort((a, b) => (l1Order.get(a.l1) - l1Order.get(b.l1)) || a.l2.localeCompare(b.l2, "zh-CN") || a.l3.localeCompare(b.l3, "zh-CN") || a.enterprise.localeCompare(b.enterprise, "zh-CN"));
 
 const families = preFamilies.map((family, index) => {
-  const task = taskForFamily(family);
+  const task = embodiedTaskForFamily(family);
+  const stage = stageForFamily(family);
   const first = family.records[0];
   return {
     id: `PF${String(index + 1).padStart(4, "0")}`,
@@ -228,6 +359,10 @@ const families = preFamilies.map((family, index) => {
     image: first.productImageFilePath || "",
     task: task?.name || "",
     taskDirection: task?.direction || "",
+    work: workForCategory(family.l1, family.l2, family.l3),
+    audience: audienceForCategory(family.l1, family.l2, family.l3),
+    evidenceStage: stage.name,
+    evidenceStageBasis: stage.basis,
   };
 });
 
@@ -260,10 +395,14 @@ for (const taxonomyRow of raw.taxonomy) {
     l1: taxonomyRow.industryLevel1,
     l2: taxonomyRow.industryLevel2,
     name: taxonomyRow.industryLevel3,
-    definition: embodiedL3Definitions[taxonomyRow.industryLevel3] || `${taxonomyRow.industryLevel3}是${taxonomyRow.industryLevel2}下面的一类具体产品`,
+    definition: embodiedL3Definitions[taxonomyRow.industryLevel3] || workForCategory(taxonomyRow.industryLevel1, taxonomyRow.industryLevel2, taxonomyRow.industryLevel3),
+    work: workForCategory(taxonomyRow.industryLevel1, taxonomyRow.industryLevel2, taxonomyRow.industryLevel3),
+    audience: audienceForCategory(taxonomyRow.industryLevel1, taxonomyRow.industryLevel2, taxonomyRow.industryLevel3),
     familyCount: matchingFamilies.length,
     enterpriseCount: new Set(matchingFamilies.map((family) => family.enterprise)).size,
     projectCount: matchingFamilies.reduce((sum, family) => sum + family.projectCount, 0),
+    familyIds: matchingFamilies.map((family) => family.id),
+    evidenceStages: ranked(countBy(matchingFamilies, (family) => family.evidenceStage)).map(([name, count]) => ({ name, count })),
   });
 }
 
@@ -308,6 +447,13 @@ for (const [l1, keys] of Object.entries(sectorEvidenceKeys)) {
   }
 }
 
+const importantFamilyIds = new Set(importantCompanies.flatMap((company) => company.familyIds));
+for (const row of l3Rows) {
+  const matchingFamilies = row.familyIds.map((id) => families.find((family) => family.id === id)).filter(Boolean);
+  const ordered = matchingFamilies.sort((a, b) => Number(importantFamilyIds.has(b.id)) - Number(importantFamilyIds.has(a.id)) || b.projectCount - a.projectCount || b.description.length - a.description.length || a.enterprise.localeCompare(b.enterprise, "zh-CN"));
+  row.exampleFamilyIds = ordered.slice(0, 6).map((family) => family.id);
+}
+
 const l1Rows = ranked(l1FamilyCounts).map(([name, familyCount], index) => {
   const matchingFamilies = families.filter((family) => family.l1 === name);
   const matchingL2 = l2Rows.filter((row) => row.l1 === name).sort((a, b) => b.familyCount - a.familyCount || b.projectCount - a.projectCount);
@@ -323,9 +469,13 @@ const l1Rows = ranked(l1FamilyCounts).map(([name, familyCount], index) => {
     maturity: sectorNotes[name]?.maturity || "现有样本不足以单独判断成熟度",
     caveat: sectorNotes[name]?.caveat || "需要继续下钻二级和三级行业",
     l2: matchingL2,
-    importantCompanyKeys: importantCompanies.filter((company) => company.l1 === name).map((company) => company.key),
+    importantCompanyKeys: importantCompanies.filter((company) => company.l1 === name).sort((a, b) => b.totalScore - a.totalScore || b.familyCount - a.familyCount).slice(0, 3).map((company) => company.key),
   };
 });
+
+const globalL3 = [...l3Rows]
+  .sort((a, b) => b.familyCount - a.familyCount || b.projectCount - a.projectCount || a.name.localeCompare(b.name, "zh-CN"))
+  .map((row, index) => ({ ...row, rank: index + 1 }));
 
 const embodiedFamilies = families.filter((family) => family.l1 === "具身智能");
 const taskNames = unique([
@@ -374,6 +524,7 @@ const dashboard = {
     aggregationRule: "同一标准化企业在同一一级、二级、三级行业下的项目合并为一个产品族，原始项目仍全部保留",
   },
   sectors: l1Rows,
+  globalL3,
   importantCompanies,
   embodied: {
     familyCount: embodiedFamilies.length,
@@ -401,6 +552,8 @@ const checks = {
   level3: dashboard.metadata.level3Count === 191,
   embodiedFamilies: dashboard.embodied.familyCount === 236,
   allProjectsHaveFamily: dashboard.projects.every((project) => project.familyId),
+  allFamiliesHavePlainWork: dashboard.families.every((family) => family.work && family.audience && family.evidenceStage),
+  allLevel3HaveDrilldown: dashboard.globalL3.every((row) => row.work && row.audience && row.familyIds.length === row.familyCount && row.exampleFamilyIds.length > 0),
 };
 if (Object.values(checks).some((value) => !value)) throw new Error(`数据检查失败：${JSON.stringify(checks)}`);
 

@@ -57,7 +57,22 @@ test("同一企业同一三级行业只生成一个产品族", async () => {
   assert.ok(merged.every((row) => row.projectNames.length >= 1));
 });
 
-test("具身智能已经拆到具体产品和人形任务", async () => {
+test("所有一级行业都使用同一套三级拆解字段", async () => {
+  const data = JSON.parse(await readFile(new URL("../public/data/waic-dashboard.json", import.meta.url), "utf8"));
+  assert.equal(data.globalL3.length, 191);
+  assert.ok(data.globalL3.every((row) => row.work && row.audience));
+  assert.ok(data.globalL3.every((row) => row.familyIds.length === row.familyCount));
+  assert.ok(data.globalL3.every((row) => row.exampleFamilyIds.length > 0));
+  assert.ok(data.globalL3.every((row) => row.evidenceStages.reduce((sum, stage) => sum + stage.count, 0) === row.familyCount));
+  assert.ok(data.families.every((row) => row.work && row.audience && row.evidenceStage && row.evidenceStageBasis));
+
+  for (const sector of data.sectors) {
+    assert.ok(sector.l2.length > 0);
+    assert.ok(sector.l2.every((row) => row.l3.length > 0));
+  }
+});
+
+test("人形机器人按全量三级方向排序并保留任务拆解", async () => {
   const data = JSON.parse(await readFile(new URL("../public/data/waic-dashboard.json", import.meta.url), "utf8"));
   const counts = new Map(data.embodied.l3.map((row) => [row.name, row.familyCount]));
   assert.equal(counts.get("关节与传动部件"), 26);
@@ -70,4 +85,9 @@ test("具身智能已经拆到具体产品和人形任务", async () => {
   assert.equal(tasks.get("工厂装配与生产"), 4);
   assert.equal(tasks.get("商用接待与导览"), 3);
   assert.equal(tasks.get("仓储拣选与搬运"), 2);
+
+  const humanoid = data.globalL3.find((row) => row.name === "人形机器人");
+  assert.equal(humanoid.rank, 7);
+  assert.equal(data.globalL3[0].name, "通用具身机器人");
+  assert.equal(data.globalL3[1].name, "AI芯片与加速卡");
 });
