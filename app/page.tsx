@@ -194,7 +194,7 @@ export default function Home() {
 
   return (
     <div className="site-shell">
-      <button className="mobile-menu" onClick={() => setMobileNav(true)}>目录</button>
+      <div className="mobile-topbar"><button className="mobile-menu" onClick={() => setMobileNav(true)}>目录</button><span>WAIC项目拆解</span></div>
       <aside className={`side ${mobileNav ? "open" : ""}`}>
         <div className="site-brand"><small>WAIC 2026</small><b>AI项目全量拆解</b><span>行业、产品、任务、项目和公司</span></div>
         <nav>
@@ -229,41 +229,28 @@ function PageIntro({ kicker, title, text }: { kicker: string; title: string; tex
   return <header className="page-intro"><span>{kicker}</span><h1>{title}</h1><p>{text}</p></header>;
 }
 
-function SectorBubbleChart({ data, go }: { data: DashboardData; go: (page: PageId, sector?: string) => void }) {
-  const width = 1040;
-  const height = 520;
-  const margin = { top: 38, right: 44, bottom: 62, left: 76 };
-  const maxX = Math.max(...data.sectors.map((row) => row.enterpriseCount));
-  const maxY = Math.max(...data.sectors.map((row) => row.familyCount));
-  const maxProject = Math.max(...data.sectors.map((row) => row.projectCount));
-  const x = (value: number) => margin.left + (value / maxX) * (width - margin.left - margin.right);
-  const y = (value: number) => height - margin.bottom - (value / maxY) * (height - margin.top - margin.bottom);
-  const r = (value: number) => 8 + Math.sqrt(value / maxProject) * 23;
-  const xTicks = [0, .25, .5, .75, 1].map((value) => Math.round(value * maxX));
-  const yTicks = [0, .25, .5, .75, 1].map((value) => Math.round(value * maxY));
-  const labelNames = new Set(data.sectors.slice(0, 3).map((row) => row.name));
-  return <div className="chart-wrap bubble-chart-wrap">
-    <div className="chart-heading"><BarChart3 aria-hidden="true" /><div><h2>核心技术和具身智能同时拥有更多企业与产品系列</h2><p>越靠右参展企业越多，越靠上产品系列越多，圆越大代表原始展品越多。</p></div></div>
-    <svg className="bubble-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="bubble-title bubble-desc">
-      <title id="bubble-title">WAIC二十个一级行业热度气泡图</title>
-      <desc id="bubble-desc">横轴为参展企业数，纵轴为产品系列数，气泡大小为原始展品数。</desc>
-      {yTicks.map((tick) => <g key={`y-${tick}`}><line x1={margin.left} x2={width - margin.right} y1={y(tick)} y2={y(tick)} className="chart-grid" /><text x={margin.left - 16} y={y(tick) + 5} textAnchor="end" className="chart-tick">{tick}</text></g>)}
-      {xTicks.map((tick) => <g key={`x-${tick}`}><line x1={x(tick)} x2={x(tick)} y1={margin.top} y2={height - margin.bottom} className="chart-grid" /><text x={x(tick)} y={height - margin.bottom + 28} textAnchor="middle" className="chart-tick">{tick}</text></g>)}
-      <text x={(margin.left + width - margin.right) / 2} y={height - 10} textAnchor="middle" className="chart-axis">参展企业数</text>
-      <text transform={`translate(20 ${(margin.top + height - margin.bottom) / 2}) rotate(-90)`} textAnchor="middle" className="chart-axis">产品系列数</text>
-      {data.sectors.map((sector) => <a key={sector.name} href="#drilldown" onClick={(event) => { event.preventDefault(); go("drilldown", sector.name); }} aria-label={`${sector.name}，${sector.enterpriseCount}家企业，${sector.familyCount}个产品系列，${sector.projectCount}件展品`}>
-        <circle cx={x(sector.enterpriseCount)} cy={y(sector.familyCount)} r={r(sector.projectCount)} className={sector.rank <= 3 ? "bubble bubble-primary" : "bubble"}><title>{sector.name}：{sector.enterpriseCount}家企业，{sector.familyCount}个产品系列，{sector.projectCount}件展品</title></circle>
-        {labelNames.has(sector.name) && <text x={x(sector.enterpriseCount)} y={sector.rank === 1 ? y(sector.familyCount) + 5 : y(sector.familyCount) - r(sector.projectCount) - 9} textAnchor="middle" className="bubble-label">{sector.name}</text>}
-      </a>)}
-    </svg>
+function SectorComparisonChart({ data, go }: { data: DashboardData; go: (page: PageId, sector?: string) => void }) {
+  const rows = data.sectors.slice(0, 8);
+  const maxValue = Math.max(...rows.flatMap((row) => [row.enterpriseCount, row.familyCount]));
+  const barWidth = (value: number) => `${Math.max(2, value / maxValue * 100)}%`;
+
+  return <div className="chart-wrap sector-comparison-wrap">
+    <div className="chart-heading"><BarChart3 aria-hidden="true" /><div><h2>核心技术与具身智能在企业数、产品系列数两项均居前两位</h2><p>按产品系列数列出前八个一级行业，两项指标使用同一条从零开始的刻度，点击行业可继续查看具体产品</p></div></div>
+    <div className="sector-comparison" role="group" aria-label="一级行业参展企业数与产品系列数对比">
+      <div className="sector-comparison-head" aria-hidden="true"><span>一级行业</span><span>参展企业数</span><span>产品系列数</span></div>
+      {rows.map((sector) => <button key={sector.name} type="button" className={`sector-comparison-row${sector.rank <= 2 ? " is-leading" : ""}`} onClick={() => go("drilldown", sector.name)} aria-label={`${sector.name}，${sector.enterpriseCount}家参展企业，${sector.familyCount}个产品系列`}>
+        <span className="comparison-name"><i>{String(sector.rank).padStart(2, "0")}</i><b>{sector.name}</b></span>
+        <span className="comparison-measure enterprise-measure" data-label="参展企业"><span><i style={{ width: barWidth(sector.enterpriseCount) }} /></span><strong>{sector.enterpriseCount}</strong></span>
+        <span className="comparison-measure family-measure" data-label="产品系列"><span><i style={{ width: barWidth(sector.familyCount) }} /></span><strong>{sector.familyCount}</strong></span>
+      </button>)}
+    </div>
   </div>;
 }
 
 type SankeyNode = { name: string; value: number; y: number; h: number; parent?: string };
 
 function SectorSankey({ sector }: { sector: Sector }) {
-  const width = 1120;
-  const height = 560;
+  const width = 1180;
   const topL2 = [...sector.l2].sort((a, b) => b.familyCount - a.familyCount).slice(0, 6);
   const otherL2Value = sector.l2.slice(6).reduce((sum, row) => sum + row.familyCount, 0);
   const l2Rows = [...topL2.map((row) => ({ name: row.name, value: row.familyCount, source: row })), ...(otherL2Value ? [{ name: "其他方向", value: otherL2Value, source: null }] : [])];
@@ -273,14 +260,15 @@ function SectorSankey({ sector }: { sector: Sector }) {
     const other = row.value - top.reduce((sum, item) => sum + item.familyCount, 0);
     return [...top.map((item) => ({ name: item.name, value: item.familyCount, parent: row.name })), ...(other > 0 ? [{ name: "其他产品", value: other, parent: row.name }] : [])];
   });
-  const scale = Math.min(1.18, (height - 86 - (leaves.length - 1) * 8) / sector.familyCount);
+  const height = Math.max(620, 120 + leaves.length * 30);
+  const scale = Math.min(1.08, (height - 110 - (leaves.length - 1) * 18) / sector.familyCount);
   const place = <T extends { name: string; value: number }>(rows: T[], gap: number) => {
     const totalH = rows.reduce((sum, row) => sum + row.value * scale, 0) + Math.max(0, rows.length - 1) * gap;
     let cursor = (height - totalH) / 2;
     return rows.map((row) => { const node = { ...row, y: cursor, h: row.value * scale }; cursor += node.h + gap; return node; });
   };
-  const l2Nodes = place(l2Rows, 14) as SankeyNode[];
-  const leafNodes = place(leaves, 8) as SankeyNode[];
+  const l2Nodes = place(l2Rows, 38) as SankeyNode[];
+  const leafNodes = place(leaves, 18) as SankeyNode[];
   const rootH = sector.familyCount * scale;
   const rootY = (height - rootH) / 2;
   const l1Links = l2Nodes.map((node, index) => ({ node, sourceY: rootY + l2Nodes.slice(0, index).reduce((sum, item) => sum + item.h, 0) + node.h / 2 }));
@@ -293,12 +281,12 @@ function SectorSankey({ sector }: { sector: Sector }) {
     <svg className="sankey-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="sankey-title sankey-desc">
       <title id="sankey-title">{sector.name}产品结构桑基图</title><desc id="sankey-desc">从{sector.name}流向主要二级方向，再流向各方向中数量最多的具体产品。</desc>
       {l1Links.map(({ node, sourceY }) => <path key={`l1-${node.name}`} d={curve(126, sourceY, 410, node.y + node.h / 2)} strokeWidth={Math.max(2, node.h)} className="sankey-link sankey-link-primary"><title>{sector.name}到{node.name}：{node.value}个产品系列</title></path>)}
-      {l2Links.map(({ node, leaf, sourceY }, index) => <path key={`l2-${index}`} d={curve(436, sourceY, 782, leaf.y + leaf.h / 2)} strokeWidth={Math.max(2, leaf.h)} className="sankey-link"><title>{node.name}到{leaf.name}：{leaf.value}个产品系列</title></path>)}
+      {l2Links.map(({ node, leaf, sourceY }, index) => <path key={`l2-${index}`} d={curve(436, sourceY, 822, leaf.y + leaf.h / 2)} strokeWidth={Math.max(2, leaf.h)} className="sankey-link"><title>{node.name}到{leaf.name}：{leaf.value}个产品系列</title></path>)}
       <rect x="96" y={rootY} width="30" height={Math.max(4, rootH)} rx="5" className="sankey-node root-node" />
       <text x="82" y={rootY + rootH / 2 - 5} textAnchor="end" className="sankey-name">{sector.name}</text><text x="82" y={rootY + rootH / 2 + 14} textAnchor="end" className="sankey-value">{sector.familyCount}个</text>
       {l2Nodes.map((node) => <g key={node.name}><rect x="410" y={node.y} width="26" height={Math.max(4, node.h)} rx="4" className="sankey-node" /><text x="398" y={node.y + node.h / 2 - 4} textAnchor="end" className="sankey-name">{node.name}</text><text x="398" y={node.y + node.h / 2 + 14} textAnchor="end" className="sankey-value">{node.value}个</text></g>)}
-      {leafNodes.map((node, index) => <g key={`${node.parent}-${node.name}-${index}`}><rect x="782" y={node.y} width="22" height={Math.max(4, node.h)} rx="4" className="sankey-node leaf-node" /><text x="818" y={node.y + node.h / 2 + 5} className="sankey-name">{node.name} · {node.value}</text></g>)}
-      <text x="111" y="28" textAnchor="middle" className="sankey-column">一级行业</text><text x="423" y="28" textAnchor="middle" className="sankey-column">二级方向</text><text x="793" y="28" textAnchor="middle" className="sankey-column">具体产品</text>
+      {leafNodes.map((node, index) => <g key={`${node.parent}-${node.name}-${index}`}><rect x="822" y={node.y} width="22" height={Math.max(4, node.h)} rx="4" className="sankey-node leaf-node" /><text x="858" y={node.y + node.h / 2 + 5} className="sankey-name">{node.name} · {node.value}</text></g>)}
+      <text x="111" y="30" textAnchor="middle" className="sankey-column">一级行业</text><text x="423" y="30" textAnchor="middle" className="sankey-column">二级方向</text><text x="833" y="30" textAnchor="middle" className="sankey-column">具体产品</text>
     </svg>
   </div>;
 }
@@ -313,7 +301,7 @@ function ProgressChart({ data, sector }: { data: DashboardData; sector: Sector }
   return <div className="chart-wrap progress-wrap">
     <div className="chart-heading"><TrendingUp aria-hidden="true" /><div><h2>{top?.name}是{sector.name}项目介绍中最多的进展阶段</h2><p>按产品系列汇总WAIC目录中出现的应用、交付、试点、研发和发布信息。</p></div></div>
     <div className="progress-bar" role="img" aria-label={`${sector.name}各进展阶段产品系列数量：${rows.map((row) => `${row.name}${row.value}个`).join("，")}`}>
-      {rows.map((row, index) => <span key={row.name} className={`stage-${index + 1}`} style={{ width: `${row.value / sector.familyCount * 100}%` }}><b>{row.value}</b></span>)}
+      {rows.map((row, index) => { const share = row.value / sector.familyCount * 100; return <span key={row.name} className={`stage-${index + 1}`} style={{ width: `${share}%` }}>{share >= 8 && <b>{row.value}</b>}</span>; })}
     </div>
     <div className="progress-legend">{rows.map((row, index) => <div key={row.name}><i className={`stage-${index + 1}`} /><span>{row.name}</span><b>{row.value}个</b></div>)}</div>
   </div>;
@@ -346,7 +334,7 @@ function OverviewPage({ data, openDetail, go }: { data: DashboardData; openDetai
         <article><span>软件侧集中点</span><h3>企业软件{l2Count("企业软件与通用应用")}个，模型与算法{l2Count("模型与算法")}个</h3><p>内容创作、办公协同、客服营销和模型能力已经形成清晰的产品方向。</p></article>
       </section>
 
-      <section><SectorBubbleChart data={data} go={go} /></section>
+      <section><SectorComparisonChart data={data} go={go} /></section>
 
       <section>
         <div className="section-title"><span>一级行业</span><h2>20个行业按产品系列数量排名</h2><p>点击任意行业，可以继续查看二级方向、具体产品、项目进展和典型公司。</p></div>

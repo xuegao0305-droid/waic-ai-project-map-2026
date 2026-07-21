@@ -111,9 +111,11 @@ test("分类先区分交付形态并保留关键回归样本", async () => {
 
 test("页面使用结果化文案并包含三类核心图表", async () => {
   const source = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
-  assert.match(source, /SectorBubbleChart/);
+  assert.match(source, /SectorComparisonChart/);
   assert.match(source, /SectorSankey/);
   assert.match(source, /ProgressChart/);
+  assert.match(source, /sector-comparison-row/);
+  assert.doesNotMatch(source, /bubble-chart|SectorBubbleChart/);
   assert.match(source, /典型公司/);
   assert.doesNotMatch(source, /只列证据排名靠前|证据评分|不随机|待核验|合并口径/);
   assert.doesNotMatch(source, /组产品|产品组|组机器人|\d+组/);
