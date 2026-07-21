@@ -22,7 +22,7 @@ test("服务端返回WAIC仪表盘页面", async () => {
   const html = await response.text();
   assert.match(html, /<html lang="zh-CN">/i);
   assert.match(html, /<title>WAIC 2026 AI项目全景<\/title>/i);
-  assert.match(html, /正在整理全部项目/);
+  assert.match(html, /正在读取全部项目/);
   assert.doesNotMatch(html, /Your site is taking shape|react-loading-skeleton/);
 });
 
@@ -55,4 +55,19 @@ test("同一企业同一三级行业只生成一个产品族", async () => {
   const merged = data.families.filter((row) => row.projectCount > 1);
   assert.ok(merged.length > 0);
   assert.ok(merged.every((row) => row.projectNames.length >= 1));
+});
+
+test("具身智能已经拆到具体产品和人形任务", async () => {
+  const data = JSON.parse(await readFile(new URL("../public/data/waic-dashboard.json", import.meta.url), "utf8"));
+  const counts = new Map(data.embodied.l3.map((row) => [row.name, row.familyCount]));
+  assert.equal(counts.get("关节与传动部件"), 26);
+  assert.equal(counts.get("人形机器人"), 22);
+  assert.equal(counts.get("传感器与感知器件"), 20);
+  assert.equal(counts.get("灵巧手与夹爪"), 16);
+
+  const tasks = new Map(data.embodied.humanoidTasks.map((row) => [row.name, row.familyCount]));
+  assert.equal(tasks.get("通用动作、科研与展示"), 8);
+  assert.equal(tasks.get("工厂装配与生产"), 4);
+  assert.equal(tasks.get("商用接待与导览"), 3);
+  assert.equal(tasks.get("仓储拣选与搬运"), 2);
 });
