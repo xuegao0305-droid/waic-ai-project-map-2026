@@ -499,7 +499,7 @@ function PolicyPage() {
   const signed = policyData.signedProjects;
 
   return <>
-    <PageIntro kicker="WAIC 2026政策与项目" title="29国合作、八项行动、十大国际案例与上海409亿元项目集中落地" text="政策、国际组织、领导人合作举措、研究报告、企业方案和项目投资分别标注，32项签约项目按公开程度展开" />
+    <PageIntro kicker="WAIC 2026政策与项目" title="29国合作、八项行动、十大国际案例与上海409亿元项目集中签约" text="政策、国际组织、领导人合作举措、研究报告、企业方案和项目投资分别标注，32项签约项目按公开程度展开" />
 
     <section className="metric-strip policy-metrics">
       <article><Handshake aria-hidden="true" /><span>WAICO创始成员</span><b>29国</b><small>总部设在上海</small></article>
@@ -509,7 +509,7 @@ function PolicyPage() {
     </section>
 
     <section className="signed-project-section">
-      <div className="section-title"><span>上海32项签约明细</span><h2>公开信息能确认7个项目名和2家签约企业，其余23项名称尚未公布</h2><p>32项投资总额超过409亿元，覆盖AI基础设施、智能体应用、具身智能和科学智能</p></div>
+      <div className="section-title"><span>上海32项签约公开信息</span><h2>公开信息能确认7个项目名和2家签约企业，另有23项尚无稳定公开线索</h2><p>32项投资总额超过409亿元，覆盖AI基础设施、智能体应用、具身智能和科学智能</p></div>
       <div className="signed-project-hero">
         <div className="signed-total">
           <article><span>签约项目</span><b>{signed.total}项</b><small>上海市级公开总数</small></article>
@@ -518,7 +518,7 @@ function PolicyPage() {
         <div className="signed-disclosure">
           <span>公开明细现状 · {signed.asOf}</span>
           <h3>{signed.disclosure}</h3>
-          <div><b>{signed.confirmedProjects.length}项</b><small>项目名明确</small><b>{signed.identifiedParticipants.length}家</b><small>签约企业明确</small><b>{signed.unpublishedCount}项</b><small>名称尚未公开</small></div>
+          <div><b>{signed.confirmedProjects.length}项</b><small>项目名明确</small><b>{signed.identifiedParticipants.length}项</b><small>仅签约企业明确</small><b>{signed.unidentifiedCount}项</b><small>无稳定公开线索</small></div>
           <a href={signed.officialSource} target="_blank" rel="noreferrer">上海市级总口径 <ArrowUpRight aria-hidden="true" /></a>
         </div>
       </div>

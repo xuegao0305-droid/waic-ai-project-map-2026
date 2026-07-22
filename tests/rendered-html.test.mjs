@@ -126,9 +126,10 @@ test("GitHub公开版包含政策页和五项导航", async () => {
   const html = await readFile(new URL("../docs/index.html", import.meta.url), "utf8");
   assert.match(html, /data-page="policy"/);
   assert.match(html, /id="policy"/);
-  assert.match(html, /29国合作、八项行动、十大国际案例与上海409亿元项目集中落地/);
-  assert.match(html, /上海32项签约明细/);
+  assert.match(html, /29国合作、八项行动、十大国际案例与上海409亿元项目集中签约/);
+  assert.match(html, /上海32项签约公开信息/);
   assert.match(html, /公开信息能确认7个项目名和2家签约企业/);
+  assert.match(html, /另有23项尚无稳定公开线索/);
   assert.match(html, /UniAI、金融合作、大赛和研究院单独列示，不并入32项明细/);
   assert.match(html, /按成果性质筛选大会前后的/);
   assert.match(html, /POLICY_DATA/);
@@ -147,8 +148,9 @@ test("政策数据区分32项签约、同期成果和采购需求", async () => 
   assert.equal(signed.total, 32);
   assert.equal(signed.confirmedProjects.length, 7);
   assert.equal(signed.identifiedParticipants.length, 2);
-  assert.equal(signed.unpublishedCount, 23);
-  assert.equal(signed.confirmedProjects.length + signed.identifiedParticipants.length + signed.unpublishedCount, signed.total);
+  assert.equal(signed.unidentifiedCount, 23);
+  assert.equal(signed.confirmedProjects.length + signed.identifiedParticipants.length + signed.unidentifiedCount, signed.total);
+  assert.ok(signed.identifiedParticipants.every((row) => row.note.includes("正式项目名称") && row.note.includes("未给出")));
   assert.ok(signed.confirmedProjects.some((row) => row.project === "杉数决策式AI底层引擎项目" && row.amount === "10亿元"));
   assert.ok(signed.confirmedProjects.some((row) => row.project === "桦之坚具身智能机器人研发项目"));
   assert.ok(!signed.confirmedProjects.some((row) => row.project.includes("UniAI")));
