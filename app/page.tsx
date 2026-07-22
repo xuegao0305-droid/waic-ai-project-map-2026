@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpRight, BarChart3, Boxes, Building2, CalendarDays, Coins, Database, GitBranch, Globe2, Handshake, Mic2, Search, Sparkles, Target, TrendingUp } from "lucide-react";
+import { BarChart3, Boxes, Building2, Coins, Database, GitBranch, Globe2, Handshake, Search, Sparkles, Target, TrendingUp } from "lucide-react";
 import policyData from "../public/data/waic-policy.json";
 
 type Project = {
@@ -147,20 +147,6 @@ const navItems: { id: PageId; label: string; note: string }[] = [
   { id: "policy", label: "政策与发言", note: "查看大会期间的重要变化" },
   { id: "method", label: "数据说明", note: "范围、单位和阅读方法" },
 ];
-
-type PolicyCategory = "国内扶持" | "国际合作" | "治理文件" | "重要发言" | "研究成果" | "项目投资";
-
-type PolicyRecord = {
-  date: string;
-  category: PolicyCategory;
-  type: string;
-  title: string;
-  summary: string;
-  highlights: string[];
-  source: string;
-};
-
-const policyRecords = policyData.records as PolicyRecord[];
 
 const formatNumber = (value: number) => new Intl.NumberFormat("zh-CN").format(value);
 const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
@@ -490,129 +476,64 @@ function ProjectPage({ data, openDetail }: { data: DashboardData; openDetail: (s
 }
 
 function PolicyPage() {
-  const filters: ("全部" | PolicyCategory)[] = ["全部", "国内扶持", "国际合作", "治理文件", "重要发言", "研究成果", "项目投资"];
-  const [filter, setFilter] = useState<(typeof filters)[number]>("全部");
-  const caseFilters = ["全部", ...unique(policyData.globalCases.map((row) => row.group))];
-  const [caseFilter, setCaseFilter] = useState("全部");
-  const visibleRecords = filter === "全部" ? policyRecords : policyRecords.filter((row) => row.category === filter);
-  const visibleCases = caseFilter === "全部" ? policyData.globalCases : policyData.globalCases.filter((row) => row.group === caseFilter);
   const signed = policyData.signedProjects;
 
   return <>
-    <PageIntro kicker="WAIC 2026政策与项目" title="29国合作、八项行动、十大国际案例与上海409亿元项目集中签约" text="政策、国际组织、领导人合作举措、研究报告、企业方案和项目投资分别标注，32项签约项目按公开程度展开" />
+    <PageIntro kicker="WAIC 2026政策与项目" title="三天最重要的政策结果与上海409亿元签约" text="重点看国际合作、AI治理、上海产业扶持和32个签约项目" />
 
     <section className="metric-strip policy-metrics">
-      <article><Handshake aria-hidden="true" /><span>WAICO创始成员</span><b>29国</b><small>总部设在上海</small></article>
-      <article><Globe2 aria-hidden="true" /><span>国际合作行动</span><b>8项</b><small>数据、算力、开源与应用等</small></article>
-      <article><Sparkles aria-hidden="true" /><span>国际合作案例</span><b>10个</b><small>覆盖产业、科研和公共服务</small></article>
-      <article><Coins aria-hidden="true" /><span>上海重点项目</span><b>409亿+</b><small>32项集中签约</small></article>
+      <article><Coins aria-hidden="true" /><span>上海重点项目</span><b>32项</b><small>投资超过409亿元</small></article>
+      <article><Building2 aria-hidden="true" /><span>已公布明细</span><b>{signed.confirmedProjects.length}+{signed.identifiedParticipants.length}</b><small>{signed.confirmedProjects.length}个项目名与{signed.identifiedParticipants.length}家签约企业</small></article>
+      <article><Handshake aria-hidden="true" /><span>国际合作组织</span><b>29国</b><small>WAICO总部设在上海</small></article>
+      <article><Globe2 aria-hidden="true" /><span>国际合作行动</span><b>8项</b><small>数据、算力、开源、应用等</small></article>
     </section>
 
     <section className="signed-project-section">
-      <div className="section-title"><span>上海32项签约公开信息</span><h2>公开信息能确认7个项目名和2家签约企业，另有23项尚无稳定公开线索</h2><p>32项投资总额超过409亿元，覆盖AI基础设施、智能体应用、具身智能和科学智能</p></div>
-      <div className="signed-project-hero">
-        <div className="signed-total">
-          <article><span>签约项目</span><b>{signed.total}项</b><small>上海市级公开总数</small></article>
-          <article><span>投资总额</span><b>{signed.amount}</b><small>未公布逐项金额</small></article>
-        </div>
-        <div className="signed-disclosure">
-          <span>公开明细现状 · {signed.asOf}</span>
-          <h3>{signed.disclosure}</h3>
-          <div><b>{signed.confirmedProjects.length}项</b><small>项目名明确</small><b>{signed.identifiedParticipants.length}项</b><small>仅签约企业明确</small><b>{signed.unidentifiedCount}项</b><small>无稳定公开线索</small></div>
-          <a href={signed.officialSource} target="_blank" rel="noreferrer">上海市级总口径 <ArrowUpRight aria-hidden="true" /></a>
-        </div>
-      </div>
+      <div className="section-title"><span>上海32项重点项目</span><h2>{signed.confirmedProjects.length}个项目名和{signed.identifiedParticipants.length}家签约企业已公布</h2><p>其余{signed.unidentifiedCount}项没有公布名称，项目覆盖AI基础设施、智能体应用、具身智能和科学智能</p></div>
       <div className="signed-area-grid">
         {signed.areas.map((area, index) => <article key={area.name}><i>{String(index + 1).padStart(2, "0")}</i><h3>{area.name}</h3><p>{area.description}</p></article>)}
       </div>
 
-      <div className="subsection-title"><span>项目名已公开</span><h3>7个项目可以从政府稿或签约现场图直接确认</h3></div>
+      <div className="subsection-title"><span>已公布项目</span><h3>{signed.confirmedProjects.length}个项目</h3></div>
       <div className="policy-project-table-wrap">
         <table className="policy-project-table">
-          <thead><tr><th>项目</th><th>企业</th><th>区域</th><th>具体方向</th><th>金额</th><th>信源</th></tr></thead>
-          <tbody>{signed.confirmedProjects.map((row) => <tr key={row.project}><td><b>{row.project}</b></td><td>{row.company}</td><td>{row.district}</td><td><span>{row.direction}</span></td><td>{row.amount}</td><td><a href={row.source} target="_blank" rel="noreferrer">{row.sourceLabel} <ArrowUpRight aria-hidden="true" /></a></td></tr>)}</tbody>
+          <thead><tr><th>项目</th><th>企业</th><th>区域</th><th>具体方向</th><th>金额</th></tr></thead>
+          <tbody>{signed.confirmedProjects.map((row) => <tr key={row.project}><td><b>{row.project}</b></td><td>{row.company}</td><td>{row.district}</td><td><span>{row.direction}</span></td><td>{row.amount}</td></tr>)}</tbody>
         </table>
       </div>
 
-      <div className="subsection-title"><span>签约企业已公开</span><h3>2家企业确认参加本次重点项目签约，正式项目名和金额未公开</h3></div>
-      <div className="identified-participants">
-        {signed.identifiedParticipants.map((row) => <article key={row.company}><div><Building2 aria-hidden="true" /><span>{row.district}</span></div><h3>{row.company}</h3><b>{row.direction}</b><p>{row.note}</p><a href={row.source} target="_blank" rel="noreferrer">具体事件｜信源 <ArrowUpRight aria-hidden="true" /></a></article>)}
+      <div className="subsection-title"><span>签约企业</span><h3>{signed.identifiedParticipants.length}家企业</h3></div>
+      <div className="policy-project-table-wrap participant-table-wrap">
+        <table className="policy-project-table participant-table">
+          <thead><tr><th>企业</th><th>区域</th><th>方向</th></tr></thead>
+          <tbody>{signed.identifiedParticipants.map((row) => <tr key={row.company}><td><b>{row.company}</b></td><td>{row.district}</td><td><span>{row.direction}</span></td></tr>)}</tbody>
+        </table>
       </div>
 
-      <div className="subsection-title"><span>闭幕式同期成果</span><h3>UniAI、金融合作、大赛和研究院单独列示，不并入32项明细</h3></div>
-      <div className="same-event-grid">
-        {signed.sameEvent.map((row) => <article key={row.title}><span>{row.relation}</span><h3>{row.title}</h3><b>{row.owner} · {row.value}</b><p>{row.description}</p></article>)}
-      </div>
-      <div className="procurement-note"><Target aria-hidden="true" /><div><span>大会采购成果</span><h3>{signed.procurement.needs}项采购需求，预计意向金额{signed.procurement.amount}</h3><p>{signed.procurement.description}</p></div></div>
     </section>
 
     <section>
-      <div className="section-title"><span>WAICO创始成员</span><h2>29国成立政府间国际组织，总部设在上海</h2><p>{policyData.waico.description}</p></div>
-      <div className="waico-panel">
-        <div className="waico-summary"><Globe2 aria-hidden="true" /><div><span>世界人工智能合作组织</span><h3>{policyData.waico.headline}</h3><p>{policyData.waico.registrationNote}</p><div><a href={policyData.waico.officialSource} target="_blank" rel="noreferrer">组织协定｜官方信源 <ArrowUpRight aria-hidden="true" /></a><a href={policyData.waico.countryListSource} target="_blank" rel="noreferrer">29国完整名单 <ArrowUpRight aria-hidden="true" /></a><a href={policyData.waico.registrationSource} target="_blank" rel="noreferrer">登记信息来源 <ArrowUpRight aria-hidden="true" /></a></div></div></div>
-        <div className="country-grid">{policyData.waico.countries.map((country, index) => <span key={country}><i>{String(index + 1).padStart(2, "0")}</i>{country}</span>)}</div>
+      <div className="section-title"><span>政策重点</span><h2>三项最重要的变化</h2></div>
+      <div className="policy-readout compact-policy-readout">
+        <article><i><Handshake aria-hidden="true" /></i><div><span>国际合作组织</span><h3>WAICO由29国发起，总部设在上海</h3><p>中国将提供5000个培训名额，建设6类区域应用合作中心，并推动气象AI在30个国家落地</p></div></article>
+        <article><i><Globe2 aria-hidden="true" /></i><div><span>国际合作行动</span><h3>合作重点落到八个具体方向</h3><p>优质数据、普惠算力、开源生态、行业应用、人才、标准、安全治理和AI向善</p></div></article>
+        <article><i><Target aria-hidden="true" /></i><div><span>AI治理规则</span><h3>智能体权限和高风险行为进入治理重点</h3><p>按风险分级管理，强化隐私与偏见纠正，并要求高风险行为保留日志和追溯能力</p></div></article>
       </div>
-      <div className="subsection-title"><span>中国在大会上另行宣布</span><h3>三项国际合作举措不属于WAICO协定已经确定的组织项目</h3></div>
-      <div className="commitment-grid">{policyData.waico.chinaCommitments.map((row) => <article key={row.title}><b>{row.value}</b><h3>{row.title}</h3><p>{row.description}</p></article>)}</div>
-      <a className="section-source" href={policyData.waico.commitmentSource} target="_blank" rel="noreferrer">具体事件｜信源 <ArrowUpRight aria-hidden="true" /></a>
     </section>
 
     <section>
-      <div className="section-title"><span>人工智能合作发展行动计划</span><h2>八项行动把国际合作拆到数据、算力、开源、应用、人才、标准、安全和AI向善</h2><p>公开文件没有补贴金额、强制期限或国内部门考核要求</p></div>
-      <div className="action-grid">{policyData.actionPlan.map((row, index) => <article key={row.name}><i>{String(index + 1).padStart(2, "0")}</i><h3>{row.name}</h3><p>{row.work}</p></article>)}</div>
-      <a className="section-source" href={policyData.actionPlanSource} target="_blank" rel="noreferrer">行动计划全文 <ArrowUpRight aria-hidden="true" /></a>
-    </section>
-
-    <section>
-      <div className="section-title"><span>中国智·惠世界（2026）</span><h2>10个案例分别解决赛事、科研、农业、出行、通信、气象、制造、能源和医疗任务</h2><p>每个案例按具体任务展开，避免把单个项目的部署条件概括成全部案例的共同特征</p></div>
-      <div className="case-filters" role="group" aria-label="筛选国际合作案例">
-        {caseFilters.map((item) => <button key={item} type="button" className={caseFilter === item ? "active" : ""} aria-pressed={caseFilter === item} onClick={() => setCaseFilter(item)}>{item}<b>{item === "全部" ? policyData.globalCases.length : policyData.globalCases.filter((row) => row.group === item).length}</b></button>)}
-      </div>
-      <div className="case-grid">{visibleCases.map((row) => <article key={row.number}><div><i>{row.number}</i><span>{row.group} · {row.place}</span></div><h3>{row.title}</h3><p>{row.task}</p></article>)}</div>
-      <a className="section-source" href={policyData.globalCasesSource} target="_blank" rel="noreferrer">国家发展改革委完整案例集 <ArrowUpRight aria-hidden="true" /></a>
-    </section>
-
-    <section>
-      <div className="section-title"><span>治理研究与城市方案</span><h2>全球治理指数、全脑城市和“魔都封面”分属研究报告、课题组观点和企业方案</h2><p>三类成果的发布主体和落地程度不同，页面分开标注</p></div>
-      <div className="governance-index-panel">
-        <div className="index-intro"><BarChart3 aria-hidden="true" /><div><span>全球人工智能治理指数（2026）</span><h3>覆盖{policyData.governanceIndex.economies}个经济体、{policyData.governanceIndex.indicators}个三级指标</h3><p>{policyData.governanceIndex.dimensions.join("、")}四个维度等权计算</p><a href={policyData.governanceIndex.source} target="_blank" rel="noreferrer">报告页面 <ArrowUpRight aria-hidden="true" /></a></div></div>
-        <div className="index-score-grid">{policyData.governanceIndex.scores.map((row) => <article key={row.label}><span>{row.label}</span><b>{row.value}</b><small>{row.note}</small></article>)}</div>
-      </div>
-      <div className="city-governance-grid">{policyData.cityGovernance.map((row) => <article key={row.title}><span>{row.type}</span><h3>{row.title}</h3><p>{row.summary}</p><b>{row.boundary}</b><a href={row.source} target="_blank" rel="noreferrer">具体事件｜信源 <ArrowUpRight aria-hidden="true" /></a></article>)}</div>
-    </section>
-
-    <section>
-      <div className="section-title"><span>上海AI+制造支持上限</span><h2>算力租用最高支持4000万元，工业AI项目与示范基地最高支持2000万元</h2><p>金额是单个方向的最高支持上限，具体申报条件以正式文件为准</p></div>
+      <div className="section-title"><span>上海AI+制造</span><h2>四类支持上限</h2></div>
       <div className="funding-map">
         <article className="funding-primary"><span>第三方算力租用</span><b>4000万元</b><p>用于工业大模型和智能体训练、部署与使用</p></article>
         <article><span>工业AI项目、数据平台、示范基地</span><b>2000万元</b><p>同时覆盖AI机床、机器人和智能终端等方向</p></article>
-        <article><span>具身机器人、工业软件、安全能力</span><b>1000万元</b><p>具身机器人需要进入真实工厂场景</p></article>
-        <article><span>模型调用、私有部署和数据采购</span><b>500万元</b><p>帮助制造企业购买外部模型与数据服务</p></article>
-      </div>
-    </section>
-
-    <section>
-      <div className="section-title"><span>政策、发言与项目进展</span><h2>按成果性质筛选大会前后的{policyRecords.length}项重要变化</h2><p>正式政策、国际组织、治理文件、重要发言、研究成果和项目投资分别标注</p></div>
-      <div className="policy-filters" role="group" aria-label="筛选政策与发言类别">
-        {filters.map((item) => <button key={item} type="button" className={filter === item ? "active" : ""} aria-pressed={filter === item} onClick={() => setFilter(item)}>{item}<b>{item === "全部" ? policyRecords.length : policyRecords.filter((row) => row.category === item).length}</b></button>)}
-      </div>
-      <div className="policy-timeline">
-        {visibleRecords.map((record) => <article key={`${record.date}-${record.title}`}>
-          <div className="policy-date"><CalendarDays aria-hidden="true" /><b>{record.date}</b><span>{record.category}</span></div>
-          <div className="policy-card">
-            <span className="policy-type">{record.type}</span>
-            <h3>{record.title}</h3>
-            <a className="policy-source" href={record.source} target="_blank" rel="noreferrer">具体事件｜信源 <ArrowUpRight aria-hidden="true" /></a>
-            <p>{record.summary}</p>
-            <ul>{record.highlights.map((item) => <li key={item}>{item}</li>)}</ul>
-          </div>
-        </article>)}
+        <article><span>具身机器人、工业软件、安全能力</span><b>1000万元</b><p>具身机器人进入真实工厂场景</p></article>
+        <article><span>模型调用、私有部署和数据采购</span><b>500万元</b><p>支持制造企业购买模型与数据服务</p></article>
       </div>
     </section>
 
     <section className="policy-outlook">
-      <div><Mic2 aria-hidden="true" /><span>整体方向</span><h2>国际合作在搭机制和公共能力，上海在给资金、项目和采购场景</h2></div>
-      <p>国际层面以WAICO、八项行动和十大案例连接规则、算力、数据与具体应用；上海层面以制造业扶持、409亿元项目签约和203.6亿元采购需求推动产业落地；治理要求开始进入智能体权限、日志、追溯和风险提示等产品功能</p>
+      <div><Sparkles aria-hidden="true" /><span>整体方向</span><h2>政策重心转向基础设施、产业场景和可追溯治理</h2></div>
+      <p>国际合作开始围绕数据、算力和应用搭建公共能力，上海通过资金支持和重点项目推动工业AI与具身智能落地</p>
     </section>
   </>;
 }

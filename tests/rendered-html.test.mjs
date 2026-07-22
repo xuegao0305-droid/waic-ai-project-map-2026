@@ -124,16 +124,16 @@ test("页面使用结果化文案并包含三类核心图表", async () => {
 
 test("GitHub公开版包含政策页和五项导航", async () => {
   const html = await readFile(new URL("../docs/index.html", import.meta.url), "utf8");
+  const activePolicy = html.slice(html.lastIndexOf("function renderPolicy(){"), html.indexOf("function renderMethod(){"));
   assert.match(html, /data-page="policy"/);
   assert.match(html, /id="policy"/);
-  assert.match(html, /29国合作、八项行动、十大国际案例与上海409亿元项目集中签约/);
-  assert.match(html, /上海32项签约公开信息/);
-  assert.match(html, /公开信息能确认7个项目名和2家签约企业/);
-  assert.match(html, /另有23项尚无稳定公开线索/);
-  assert.match(html, /UniAI、金融合作、大赛和研究院单独列示，不并入32项明细/);
-  assert.match(html, /按成果性质筛选大会前后的/);
+  assert.match(activePolicy, /三天最重要的政策结果与上海409亿元签约/);
+  assert.match(activePolicy, /signed\.confirmedProjects\.length\+'个项目名和'\+signed\.identifiedParticipants\.length\+'家签约企业已公布/);
+  assert.match(activePolicy, /其余'\+signed\.unidentifiedCount\+'项没有公布名称/);
+  assert.match(activePolicy, /三项最重要的变化/);
+  assert.match(activePolicy, /四类支持上限/);
+  assert.doesNotMatch(activePolicy, /不并入32项明细|具体事件｜信源|<th>信源<\/th>|29国完整名单|中国智·惠世界|政策、发言与项目进展/);
   assert.match(html, /POLICY_DATA/);
-  assert.match(html, /POLICY_RECORDS/);
 });
 
 test("政策数据区分32项签约、同期成果和采购需求", async () => {
