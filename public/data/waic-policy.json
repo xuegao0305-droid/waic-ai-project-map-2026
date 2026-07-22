@@ -1,0 +1,486 @@
+{
+  "metadata": {
+    "asOf": "2026-07-22",
+    "title": "WAIC 2026政策、国际合作与上海项目进展"
+  },
+  "waico": {
+    "headline": "29国签署成立协定，总部设在上海",
+    "description": "WAICO是独立的政府间国际组织，目标是促进人工智能国际合作和全球治理，推动人工智能朝有益、安全、公平的方向发展",
+    "countries": [
+      "中国",
+      "马来西亚",
+      "印度尼西亚",
+      "柬埔寨",
+      "老挝",
+      "缅甸",
+      "阿尔及利亚",
+      "白俄罗斯",
+      "巴西",
+      "喀麦隆",
+      "刚果（布）",
+      "古巴",
+      "埃塞俄比亚",
+      "哈萨克斯坦",
+      "肯尼亚",
+      "吉尔吉斯斯坦",
+      "莱索托",
+      "莫桑比克",
+      "尼加拉瓜",
+      "阿曼",
+      "巴基斯坦",
+      "俄罗斯",
+      "塞内加尔",
+      "塞尔维亚",
+      "南非",
+      "塔吉克斯坦",
+      "乌兹别克斯坦",
+      "委内瑞拉",
+      "赞比亚"
+    ],
+    "officialSource": "https://www.mfa.gov.cn/web/wjdt_674879/gjldrhd_674881/202607/t20260716_11984399.shtml",
+    "countryListSource": "https://majujohor.bernama.com/news-en.php?id=2582074",
+    "registrationNote": "印度尼西亚政府7月17日表示，创始成员登记开放至7月30日",
+    "registrationSource": "https://en.antaranews.com/news/423160/indonesia-joins-waico-as-founding-member-to-boost-ai-development",
+    "chinaCommitments": [
+      {
+        "value": "5000个",
+        "title": "未来五年培训名额",
+        "description": "面向发展中国家培养人工智能人才"
+      },
+      {
+        "value": "6类",
+        "title": "区域应用合作中心",
+        "description": "面向东盟、非盟、阿盟、拉共体、上合组织和金砖国家"
+      },
+      {
+        "value": "30国",
+        "title": "妈祖气象AI落地计划",
+        "description": "推动气象预警公共产品在30个国家落地"
+      }
+    ],
+    "commitmentSource": "https://www.mfa.gov.cn/web/wjdt_674879/fyrbt_674889/202607/t20260717_11984988.shtml"
+  },
+  "actionPlan": [
+    {
+      "name": "优质数据供给",
+      "work": "建设跨境可信数据空间，共建多语种语料库和行业数据集"
+    },
+    {
+      "name": "智能算力普惠",
+      "work": "推动算力设施联通，为发展中国家提供普惠智算服务"
+    },
+    {
+      "name": "开源生态共享",
+      "work": "共享通用大模型、基础算法和工具组件，建设开源合规与安全准则"
+    },
+    {
+      "name": "人工智能深度赋能",
+      "work": "把AI用于科学、制造、医疗、教育、农业和治理等具体场景"
+    },
+    {
+      "name": "数智人才共育",
+      "work": "联合培养人才，共建职业标准和技能认证体系"
+    },
+    {
+      "name": "规则标准共建",
+      "work": "推动国际标准制修订，增强不同标准体系的互操作性"
+    },
+    {
+      "name": "安全治理协作",
+      "work": "共享安全威胁信息，协同处理误用、滥用和应急事件"
+    },
+    {
+      "name": "人工智能向善",
+      "work": "保护隐私、纠正算法偏见，为全球南方提供公共科学产品"
+    }
+  ],
+  "actionPlanSource": "https://www.ndrc.gov.cn/fggz/202607/t20260717_1406573.html",
+  "globalCases": [
+    {
+      "number": "01",
+      "group": "公共服务",
+      "place": "意大利",
+      "title": "米兰冬奥：“智能奥运”开启冰雪新视界",
+      "task": "用AI支持赛事内容生产和观赛体验"
+    },
+    {
+      "number": "02",
+      "group": "科研",
+      "place": "全球",
+      "title": "“智能钥匙”助力破解地球密码",
+      "task": "GeoGPT帮助研究人员检索和理解地学资料"
+    },
+    {
+      "number": "03",
+      "group": "产业升级",
+      "place": "巴西",
+      "title": "“智慧小院”焕新巴西家庭农场",
+      "task": "把农业技术和数字工具带入家庭农场"
+    },
+    {
+      "number": "04",
+      "group": "公共服务",
+      "place": "阿联酋",
+      "title": "自动驾驶技术铺就阿联酋智慧出行路",
+      "task": "以自动驾驶提供城市出行服务"
+    },
+    {
+      "number": "05",
+      "group": "产业升级",
+      "place": "印度尼西亚",
+      "title": "AI为印尼电信编织低碳新网",
+      "task": "中兴通讯与XLSMART用AI降低通信网络能耗"
+    },
+    {
+      "number": "06",
+      "group": "公共服务",
+      "place": "吉布提",
+      "title": "“妈祖”渡红海：中国气象AI守护吉布提港湾",
+      "task": "用气象AI提高港口和沿海地区预警能力"
+    },
+    {
+      "number": "07",
+      "group": "产业升级",
+      "place": "马来西亚",
+      "title": "小模型AI算法助推马来西亚橡胶产业创新破局",
+      "task": "以小模型优化天然橡胶加工生产"
+    },
+    {
+      "number": "08",
+      "group": "产业升级",
+      "place": "智利",
+      "title": "“数字智脑”点亮智利电网",
+      "task": "国网浙江团队与智利CGE提升电网运营效率"
+    },
+    {
+      "number": "09",
+      "group": "科研",
+      "place": "埃及",
+      "title": "中埃携手“向海寻药”",
+      "task": "用AI加快红海天然产物的药物发现"
+    },
+    {
+      "number": "10",
+      "group": "医疗健康",
+      "place": "多国",
+      "title": "AI宫颈癌筛查技术呵护“她”健康",
+      "task": "用AI辅助宫颈癌筛查和基层医疗服务"
+    }
+  ],
+  "globalCasesSource": "https://www.ndrc.gov.cn/fggz/202607/P020260717521862614740.pdf",
+  "governanceIndex": {
+    "economies": 40,
+    "indicators": 37,
+    "dimensions": ["能力", "责任", "普惠", "持续"],
+    "scores": [
+      {
+        "label": "美国综合得分",
+        "value": "77.5",
+        "note": "综合排名第1"
+      },
+      {
+        "label": "中国综合得分",
+        "value": "71.4",
+        "note": "综合排名第2"
+      },
+      {
+        "label": "中国责任维度",
+        "value": "78.0",
+        "note": "治理表现较强"
+      },
+      {
+        "label": "中国普惠维度",
+        "value": "75.1",
+        "note": "处在全球前列"
+      }
+    ],
+    "source": "https://fddi.fudan.edu.cn/ff/dd/c19047a786397/page.htm",
+    "pdf": "https://fddi.fudan.edu.cn/_upload/article/files/6a/71/91be2ea84e0d862dcdcbc5f2bdf8/a1e30b9b-1ab8-4b94-b07b-f9f2c501a84d.pdf"
+  },
+  "signedProjects": {
+    "total": 32,
+    "amount": "409亿元以上",
+    "areas": [
+      {
+        "name": "AI基础设施",
+        "description": "智算芯片、先进封装、融合算力、天基计算和安全底座"
+      },
+      {
+        "name": "智能体应用",
+        "description": "决策引擎和面向产业任务的智能体应用"
+      },
+      {
+        "name": "具身智能",
+        "description": "机器人研发和汽车制造等真实场景应用"
+      },
+      {
+        "name": "科学智能",
+        "description": "面向科研发现和科学计算的AI项目"
+      }
+    ],
+    "disclosure": "上海市级公开稿公布了32项、投资超过409亿元和四个领域，没有发布完整32项名单及逐项金额",
+    "asOf": "截至2026年7月22日",
+    "officialSource": "https://www.shanghai.gov.cn/nw4411/20260721/b964a0614c41408ea1d916a8fd211761.html",
+    "confirmedProjects": [
+      {
+        "project": "得安人工智能抗量子密码平台",
+        "company": "得安量子",
+        "district": "黄浦区",
+        "direction": "AI安全",
+        "amount": "未披露",
+        "source": "https://www.shpt.gov.cn/yaowen/20260721/971601/21ed5750523d4480a1c4255765fa0a02.png",
+        "sourceLabel": "上海普陀区政府现场图"
+      },
+      {
+        "project": "中科天算天基智能计算系统研发项目",
+        "company": "中科天算",
+        "district": "松江区",
+        "direction": "天基计算",
+        "amount": "未披露",
+        "source": "https://www.shpt.gov.cn/yaowen/20260721/971601/21ed5750523d4480a1c4255765fa0a02.png",
+        "sourceLabel": "上海普陀区政府现场图"
+      },
+      {
+        "project": "杉数决策式AI底层引擎项目",
+        "company": "杉数科技（上海）有限公司",
+        "district": "普陀区",
+        "direction": "智能决策",
+        "amount": "10亿元",
+        "source": "https://www.shpt.gov.cn/yaowen/20260721/971601.html",
+        "sourceLabel": "上海普陀区政府"
+      },
+      {
+        "project": "无界动力汽车智造场景具身智能应用项目",
+        "company": "无界动力",
+        "district": "嘉定区",
+        "direction": "具身智能",
+        "amount": "未披露",
+        "source": "https://www.shpt.gov.cn/yaowen/20260721/971601/21ed5750523d4480a1c4255765fa0a02.png",
+        "sourceLabel": "上海普陀区政府现场图"
+      },
+      {
+        "project": "长电科技高端智算芯片先进封装项目",
+        "company": "长电科技",
+        "district": "临港新片区",
+        "direction": "AI芯片封装",
+        "amount": "未披露",
+        "source": "https://www.shpt.gov.cn/yaowen/20260721/971601/21ed5750523d4480a1c4255765fa0a02.png",
+        "sourceLabel": "上海普陀区政府现场图"
+      },
+      {
+        "project": "思朗科技量超智融合算力平台",
+        "company": "思朗科技",
+        "district": "静安区",
+        "direction": "融合算力",
+        "amount": "未披露",
+        "source": "https://www.shpt.gov.cn/yaowen/20260721/971601/21ed5750523d4480a1c4255765fa0a02.png",
+        "sourceLabel": "上海普陀区政府现场图"
+      },
+      {
+        "project": "桦之坚具身智能机器人研发项目",
+        "company": "上海桦之坚科技有限公司",
+        "district": "长宁区",
+        "direction": "具身智能机器人",
+        "amount": "未披露",
+        "source": "https://www.shanghai.gov.cn/nw15343/20260721/d933afeec8684265b481862ab81448d5.html",
+        "sourceLabel": "上海市政府"
+      }
+    ],
+    "identifiedParticipants": [
+      {
+        "company": "赛索德（上海）智能科技有限公司",
+        "district": "虹口区",
+        "direction": "工业装配、质检和柔性制造",
+        "note": "已确认参加本次重点项目签约，公开报道未给出正式项目名称和金额",
+        "source": "https://ex.chinadaily.com.cn/exchange/partners/82/rss/channel/cn/columns/sz8srm/stories/WS6a5f0647a310d709c2fbebd1.html"
+      },
+      {
+        "company": "意界智创（上海）智能科技有限公司",
+        "district": "未披露",
+        "direction": "人工智能项目建设",
+        "note": "已确认作为上海市人工智能重点项目参加签约，公开报道未给出正式项目名称和金额",
+        "source": "https://www.ijiwei.com/n/1067237"
+      }
+    ],
+    "unpublishedCount": 23,
+    "sameEvent": [
+      {
+        "title": "UniAI·智联申城",
+        "owner": "上海联通",
+        "value": "投资超250亿元",
+        "description": "加强智算基础设施，推进产业升级、惠民服务、城市治理和数智生态",
+        "relation": "闭幕式同期单独启动，市级稿没有将其列入32项明细"
+      },
+      {
+        "title": "创新型企业专项金融支持服务战略合作",
+        "owner": "金融支持",
+        "value": "金额未披露",
+        "description": "面向人工智能企业打造新型金融产品",
+        "relation": "闭幕式同期发布成果"
+      },
+      {
+        "title": "2026国际具身智能技能大赛",
+        "owner": "赛事平台",
+        "value": "金额未披露",
+        "description": "以真实任务赛事推动具身智能进入产业一线",
+        "relation": "闭幕式同期启动"
+      },
+      {
+        "title": "上海物理智能与机器人研究院",
+        "owner": "研究机构",
+        "value": "正式揭牌",
+        "description": "推动物理智能和机器人技术迭代升级",
+        "relation": "闭幕式同期揭牌"
+      }
+    ],
+    "procurement": {
+      "needs": 212,
+      "amount": "203.6亿元",
+      "description": "大会现场发布的采购需求及预计意向金额，属于大会采购成果，不属于32项签约投资"
+    }
+  },
+  "cityGovernance": [
+    {
+      "type": "大会研究观点",
+      "title": "全脑城市术语对照表",
+      "summary": "课题组把城市体检、微更新、防汛等治理场景与多模态感知、智能体协同等技术概念进行对应",
+      "boundary": "目前属于研究框架，不是国家政策或上海正式城市操作系统",
+      "source": "https://cnews.chinadaily.com.cn/a/202607/21/WS6a5ed7b5a310d709c2fbeaba.html"
+    },
+    {
+      "type": "上海企业方案",
+      "title": "“魔都封面”城市治理方案",
+      "summary": "上海大数据股份提出23个重点城市垂类模型的共享共治机制，覆盖人流、积水、车辆和人群聚集等场景",
+      "boundary": "公开材料仅说明首批多个模型原型进入试点，23个模型并非均已部署",
+      "source": "https://new.qq.com/rain/a/20260708A03X1W00"
+    }
+  ],
+  "records": [
+    {
+      "date": "07.16",
+      "category": "国际合作",
+      "type": "国际组织协定",
+      "title": "世界人工智能合作组织协定在上海签署",
+      "summary": "29国成为创始成员国，总部设在上海，组织定位为独立政府间国际组织",
+      "highlights": ["促进人工智能国际合作与全球治理", "强调有益、安全、公平发展", "完整29国名单已在本页展开"],
+      "source": "https://www.mfa.gov.cn/web/wjdt_674879/gjldrhd_674881/202607/t20260716_11984399.shtml"
+    },
+    {
+      "date": "07.17",
+      "category": "国内扶持",
+      "type": "上海产业扶持政策",
+      "title": "上海发布进一步推动AI+制造发展的若干措施",
+      "summary": "13项措施覆盖算力、工业模型、数据集、示范工厂、机器人、工业软件和安全能力",
+      "highlights": ["第三方算力租用最高支持4000万元", "工业AI项目、数据平台和示范基地最高支持2000万元", "具身机器人真实工厂应用最高支持1000万元"],
+      "source": "https://sheitc.sh.gov.cn/cyfz/20260717/7986191fa75f49a698259f01c829df52.html"
+    },
+    {
+      "date": "07.17",
+      "category": "国际合作",
+      "type": "国家国际合作行动",
+      "title": "人工智能合作发展行动计划发布",
+      "summary": "行动计划把国际合作拆成数据、算力、开源、应用、人才、标准、安全和AI向善八项行动",
+      "highlights": ["建设跨境可信数据空间和多语种语料", "面向发展中国家提供普惠算力", "推动制造、医疗、教育、农业和治理合作"],
+      "source": "https://www.ndrc.gov.cn/fggz/202607/t20260717_1406573.html"
+    },
+    {
+      "date": "07.17",
+      "category": "治理文件",
+      "type": "国际伦理治理行动",
+      "title": "国际人工智能伦理治理行动计划发布",
+      "summary": "治理范围覆盖人工智能全生命周期，重点处理风险分类、隐私、偏见、可解释性和弱势群体保护",
+      "highlights": ["按风险等级实施分类治理", "明确研发、部署和使用环节责任", "强化隐私保护和偏见纠正"],
+      "source": "https://www.ncsti.gov.cn/kjdt/ztbd/2026rgzndh/202607/t20260717_251481.html"
+    },
+    {
+      "date": "07.17",
+      "category": "重要发言",
+      "type": "大会主旨讲话",
+      "title": "中国宣布培训、区域中心和气象AI三项国际合作举措",
+      "summary": "这些安排是中国在大会上宣布的合作举措，不属于WAICO协定已经确定的组织项目",
+      "highlights": ["未来五年提供5000个人工智能培训名额", "面向六类区域组织建设应用合作中心", "推动妈祖气象AI在30个国家落地"],
+      "source": "https://www.mfa.gov.cn/web/wjdt_674879/fyrbt_674889/202607/t20260717_11984988.shtml"
+    },
+    {
+      "date": "07.17",
+      "category": "治理文件",
+      "type": "大会主席声明",
+      "title": "智能体权限、行为边界和可追溯性进入治理重点",
+      "summary": "声明同时讨论开源、数据流动、绿色算力、劳动者权益、前沿模型风险和关键基础设施安全",
+      "highlights": ["清楚界定智能体决策权限和行为边界", "高风险行为需要日志和追溯", "安全能力进入产品设计和开发阶段"],
+      "source": "https://www.fmprc.gov.cn/zyxw/202607/t20260717_11984707.shtml"
+    },
+    {
+      "date": "07.17",
+      "category": "研究成果",
+      "type": "国家发展改革委案例集",
+      "title": "《中国智·惠世界（2026）》发布10个国际合作案例",
+      "summary": "10项案例覆盖赛事、地学、农业、出行、通信、气象、制造、能源、药物发现和医疗筛查",
+      "highlights": ["印尼低碳网络由中兴通讯与XLSMART实施", "智利电网项目由国网浙江团队与CGE合作", "每个案例的任务和国家已在本页展开"],
+      "source": "https://www.ndrc.gov.cn/fggz/202607/P020260717521862614740.pdf"
+    },
+    {
+      "date": "07.18",
+      "category": "重要发言",
+      "type": "部市重要发言",
+      "title": "阴和俊与龚正强调普惠应用、风险防范和敏捷治理",
+      "summary": "科技部与上海市把技术应用和治理能力放进同一框架，上海将继续推进制度、标准和技术支撑",
+      "highlights": ["缩小数字鸿沟并扩大普惠应用", "发展风险识别和安全防范技术", "推进敏捷治理和标准协调"],
+      "source": "https://www.shanghai.gov.cn/nw4411/20260719/54d217700d434338a70e08c9389ac26e.html"
+    },
+    {
+      "date": "07.19",
+      "category": "国际合作",
+      "type": "国际合作项目",
+      "title": "全球智惠平台和人工智能语料场景清单发布",
+      "summary": "平台与清单面向应急救援、海外风险评估和制造业图像等具体需求",
+      "highlights": ["连接国际公共服务和产业场景", "以语料和应用需求推动项目落地", "覆盖应急、海外风险和制造业图像"],
+      "source": "https://www.shanghai.gov.cn/nw4411/20260719/79b7fa4c703c4420a5f2cd048ce5fd4f.html"
+    },
+    {
+      "date": "07.19",
+      "category": "研究成果",
+      "type": "复旦大学研究报告",
+      "title": "全球人工智能治理指数覆盖40个经济体，中国综合排名第2",
+      "summary": "报告使用能力、责任、普惠和持续四个等权维度，中国在普惠维度处在全球前列",
+      "highlights": ["美国综合77.5分，中国71.4分", "中国责任维度78.0分", "中国普惠维度75.1分"],
+      "source": "https://fddi.fudan.edu.cn/ff/dd/c19047a786397/page.htm"
+    },
+    {
+      "date": "07.20",
+      "category": "项目投资",
+      "type": "上海项目签约",
+      "title": "上海32个人工智能重点项目签约，投资超过409亿元",
+      "summary": "市级公开稿只公布总数、总额和四个领域，本页分开列出已公开项目名、已知参与企业及尚未公开部分",
+      "highlights": ["覆盖AI基础设施、智能体应用、具身智能和科学智能", "7个项目名可直接确认", "其余项目名称和逐项金额尚未公开"],
+      "source": "https://www.shanghai.gov.cn/nw4411/20260721/b964a0614c41408ea1d916a8fd211761.html"
+    },
+    {
+      "date": "07.20",
+      "category": "项目投资",
+      "type": "闭幕式同期重大专项",
+      "title": "上海联通启动UniAI·智联申城，计划投资超过250亿元",
+      "summary": "该专项在闭幕式上单独启动，市级稿没有说明其属于32项重点项目",
+      "highlights": ["加强智算基础设施", "覆盖产业升级、惠民服务和城市治理", "不能用250亿元拆分或解释409亿元"],
+      "source": "https://www.shanghai.gov.cn/nw4411/20260721/b964a0614c41408ea1d916a8fd211761.html"
+    },
+    {
+      "date": "07.20",
+      "category": "研究成果",
+      "type": "大会研究观点",
+      "title": "全脑城市课题组发布术语对照表",
+      "summary": "该成果是研究团队提出的城市治理概念映射，目前不属于国家政策或上海正式城市操作系统",
+      "highlights": ["连接城市治理场景与AI技术术语", "可用于城市体检、微更新和防汛等场景讨论", "成果性质为课题组研究框架"],
+      "source": "https://cnews.chinadaily.com.cn/a/202607/21/WS6a5ed7b5a310d709c2fbeaba.html"
+    },
+    {
+      "date": "07.08",
+      "category": "研究成果",
+      "type": "上海企业城市治理方案",
+      "title": "“魔都封面”提出23个城市垂类模型共享共治机制",
+      "summary": "23个是规划中的重点城市垂类方向，公开材料只确认首批多个模型原型进入试点",
+      "highlights": ["场景覆盖人流、积水、车辆和人群聚集", "强调城市视频资源共享与模型复用", "23个模型并非均已部署"],
+      "source": "https://new.qq.com/rain/a/20260708A03X1W00"
+    }
+  ]
+}
